@@ -1,0 +1,92 @@
+environment = "local-dev"
+log_level = "INFO"
+cache_dir = ".cache/local-dev"
+
+[database]
+backend = "sqlite"
+sqlite_path = "./data/local_dev.db"
+url = "sqlite:///./data/local_dev.db"
+echo = false
+
+[email]
+provider = "file"
+recipient = "donovan@example.com"
+sender = "newgrad-notifier@example.com"
+outbox_dir = "outbox"
+
+[llm]
+provider = "heuristic"
+model = "gpt-4.1-mini"
+openai_api_key = ""
+enabled = false
+
+[schedule]
+run_time_local = "08:00"
+timezone = "America/New_York"
+immediate_alerts_enabled = true
+immediate_alert_threshold = 92
+
+[company_coverage]
+list_path = "examples/local_sources/companies.json"
+
+[web_search]
+provider = "fixture"
+fixture_path = "examples/local_sources/search_results.json"
+max_results_per_query = 5
+queries = [
+  "software engineer new grad",
+  "early career software engineer",
+]
+
+[[structured_feeds]]
+name = "simplify_fixture"
+url = "examples/local_sources/simplify_jobs.json"
+format = "json"
+job_path = "jobs"
+company_key = "company"
+title_key = "title"
+url_key = "url"
+location_key = "location"
+posted_at_key = "posted_at"
+description_key = "description"
+job_id_key = "job_id"
+
+[[ats_boards]]
+company_name = "Figma"
+platform = "greenhouse"
+api_url = "examples/local_sources/greenhouse_board.json"
+careers_url = "https://figma.com/careers"
+priority_tier = 1
+enabled = true
+
+[[ats_boards]]
+company_name = "Plaid"
+platform = "lever"
+api_url = "examples/local_sources/lever_board.json"
+careers_url = "https://plaid.com/careers"
+priority_tier = 1
+enabled = true
+
+[[ats_boards]]
+company_name = "OpenAI"
+platform = "ashby"
+api_url = "examples/local_sources/ashby_board.json"
+careers_url = "https://openai.com/careers"
+priority_tier = 1
+enabled = true
+
+[[ats_boards]]
+company_name = "Tesla"
+platform = "smartrecruiters"
+api_url = "examples/local_sources/smartrecruiters_board.json"
+careers_url = "https://tesla.com/careers"
+priority_tier = 1
+enabled = true
+
+[[ats_boards]]
+company_name = "Hewlett Packard Enterprise"
+platform = "workday"
+api_url = "examples/local_sources/workday_board.json"
+careers_url = "https://careers.hpe.com"
+priority_tier = 2
+enabled = true

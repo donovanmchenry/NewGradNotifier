@@ -1,0 +1,84 @@
+name: Daily Job Discovery
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 12,13 * * *"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  run-daily-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      EMAIL_RECIPIENT: ${{ vars.EMAIL_RECIPIENT || 'dzmchenry@gmail.com' }}
+      EMAIL_SENDER: ${{ vars.EMAIL_SENDER || 'dzmchenry@gmail.com' }}
+      EMAIL_PROVIDER: ${{ vars.EMAIL_PROVIDER || 'smtp' }}
+      SMTP_HOST: ${{ vars.SMTP_HOST || 'smtp.gmail.com' }}
+      SMTP_PORT: ${{ vars.SMTP_PORT || '587' }}
+      SMTP_USERNAME: ${{ vars.SMTP_USERNAME || 'dzmchenry@gmail.com' }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      SMTP_TLS: ${{ vars.SMTP_TLS || 'true' }}
+      IMMEDIATE_ALERTS_ENABLED: ${{ vars.IMMEDIATE_ALERTS_ENABLED || 'true' }}
+      IMMEDIATE_ALERT_THRESHOLD: ${{ vars.IMMEDIATE_ALERT_THRESHOLD || '92' }}
+      DB_BACKEND: ${{ vars.DB_BACKEND || 'sqlite' }}
+      SQLITE_PATH: ${{ vars.SQLITE_PATH || './data/newgradnotifier.db' }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5.4-thinking' }}
+      RUN_TIME_LOCAL: ${{ vars.RUN_TIME_LOCAL || '08:00' }}
+      TIME_ZONE: ${{ vars.TIME_ZONE || 'America/New_York' }}
+      SQLITE_ARTIFACT_NAME: newgradnotifier-sqlite-state
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Gate scheduled trigger to 8 AM local time
+        id: schedule_gate
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        run: python scripts/should_run_schedule.py
+
+      - name: Stop outside the local execution window
+        if: github.event_name == 'schedule' && steps.schedule_gate.outcome != 'success'
+        run: echo "Skipping this UTC trigger because it is not 8:00 AM in America/New_York."
+
+      - name: Restore previous SQLite state
+        if: github.event_name != 'schedule' || steps.schedule_gate.outcome == 'success'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python scripts/restore_sqlite_from_artifact.py
+
+      - name: Create virtual environment
+        if: github.event_name != 'schedule' || steps.schedule_gate.outcome == 'success'
+        run: python -m venv .venv
+
+      - name: Install dependencies
+        if: github.event_name != 'schedule' || steps.schedule_gate.outcome == 'success'
+        run: .venv/bin/pip install -e '.[dev]'
+
+      - name: Run tests
+        if: github.event_name != 'schedule' || steps.schedule_gate.outcome == 'success'
+        run: .venv/bin/pytest
+
+      - name: Run production pipeline
+        if: github.event_name != 'schedule' || steps.schedule_gate.outcome == 'success'
+        run: .venv/bin/newgrad-notifier --config config/production.toml run-once
+
+      - name: Upload SQLite state
+        if: github.event_name != 'schedule' || steps.schedule_gate.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: newgradnotifier-sqlite-state
+          path: data/newgradnotifier.db
+          if-no-files-found: error
+          retention-days: 30
+

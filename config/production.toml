@@ -1,0 +1,85 @@
+environment = "production"
+log_level = "INFO"
+cache_dir = ".cache/newgrad-notifier"
+
+[database]
+backend = "sqlite"
+sqlite_path = "./data/newgradnotifier.db"
+url = "sqlite:///./data/newgradnotifier.db"
+echo = false
+
+[email]
+provider = "smtp"
+recipient = "dzmchenry@gmail.com"
+sender = "dzmchenry@gmail.com"
+smtp_host = "smtp.gmail.com"
+smtp_port = 587
+smtp_username = "dzmchenry@gmail.com"
+smtp_password = ""
+smtp_use_tls = true
+outbox_dir = "outbox"
+
+[llm]
+provider = "openai"
+model = "gpt-5.4-thinking"
+openai_api_key = ""
+enabled = true
+
+[schedule]
+run_time_local = "08:00"
+timezone = "America/New_York"
+immediate_alerts_enabled = true
+immediate_alert_threshold = 92
+
+[filters]
+remote_preference = "mixed"
+allowed_locations = ["United States", "Remote"]
+excluded_locations = []
+excluded_companies = []
+excluded_job_families = [
+  "QA",
+  "IT Support",
+  "Help Desk",
+  "Analyst",
+  "Sales Engineer",
+  "Developer Advocate",
+  "Embedded",
+  "Firmware",
+  "Hardware",
+]
+priority_companies = [
+  "Google",
+  "Meta",
+  "Microsoft",
+  "Amazon",
+  "Apple",
+  "Stripe",
+  "Databricks",
+  "Uber",
+  "Airbnb",
+  "Adobe",
+  "NVIDIA",
+  "Capital One",
+  "Bloomberg",
+]
+keywords = [
+  "software engineer new grad",
+  "new grad software engineer",
+  "university graduate software engineer",
+  "early career software engineer",
+  "software engineer i",
+  "associate software engineer",
+  "product engineer",
+  "frontend engineer",
+  "backend engineer",
+  "full stack engineer",
+]
+
+[company_coverage]
+list_path = ""
+
+[web_search]
+provider = "duckduckgo_html"
+max_results_per_query = 10
+queries = []
+fixture_path = ""
