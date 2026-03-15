@@ -28,8 +28,8 @@ jobs:
       DB_BACKEND: ${{ vars.DB_BACKEND || 'sqlite' }}
       SQLITE_PATH: ${{ vars.SQLITE_PATH || './data/newgradnotifier.db' }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5-mini' }}
-      OPENAI_FALLBACK_MODELS: ${{ vars.OPENAI_FALLBACK_MODELS || 'gpt-4.1-mini' }}
+      OPENAI_MODEL: gpt-5-mini
+      OPENAI_FALLBACK_MODELS: gpt-4.1-mini
       RUN_TIME_LOCAL: ${{ vars.RUN_TIME_LOCAL || '08:00' }}
       TIME_ZONE: ${{ vars.TIME_ZONE || 'America/New_York' }}
       SQLITE_ARTIFACT_NAME: newgradnotifier-sqlite-state

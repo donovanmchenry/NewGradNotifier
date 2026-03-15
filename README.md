@@ -118,6 +118,8 @@ These are the production env var names expected by the app:
 - `RUN_TIME_LOCAL`
 - `TIME_ZONE`
 
+GitHub Actions currently pins the OpenAI workflow models directly in the workflow file so stale repository variables cannot override production runs.
+
 See [`.env.example`](.env.example) for the exact quick-start template.
 
 ## Resend Setup

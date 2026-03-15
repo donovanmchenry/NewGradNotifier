@@ -8,6 +8,7 @@ def test_filtering_rejects_internships_and_non_us_roles():
     assert is_relevant_role("Software Engineering Intern", "Summer internship role", settings) is False
     assert is_relevant_role("Embedded Software Engineer", "Firmware and hardware focus", settings) is False
     assert is_relevant_role("Senior Software Engineer", "Backend platform role", settings) is False
+    assert is_relevant_role("Software Engineer II", "Backend platform role", settings) is False
     assert is_relevant_role("Software Engineer", "General SWE role for 4+ years of experience", settings) is False
     assert is_relevant_role("Software Engineer", "Entry-level role for 2027 graduates in the United States", settings) is True
     assert location_allowed("Toronto, ON, Canada", settings) is False

@@ -44,7 +44,7 @@ class CompanyPagesCollector(Collector):
                     source_type=SourceType.COMPANY_PAGE,
                     settings=context.settings,
                     default_company_name=company["name"],
+                    allow_anchor_fallback=False,
                 )
             )
         return jobs[: context.settings.collection.max_jobs_per_source]
-

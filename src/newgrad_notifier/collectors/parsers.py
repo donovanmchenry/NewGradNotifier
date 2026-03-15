@@ -63,6 +63,7 @@ def extract_jobs_from_html(
     source_type: SourceType,
     settings: AppSettings,
     default_company_name: str | None = None,
+    allow_anchor_fallback: bool = True,
 ) -> list[CollectedJob]:
     """Extract job postings from JSON-LD or relevant anchor tags."""
 
@@ -109,12 +110,15 @@ def extract_jobs_from_html(
                 )
             )
 
-    if jobs:
+    if jobs or not allow_anchor_fallback:
         return jobs
 
     for anchor in soup.find_all("a", href=True):
         anchor_text = anchor.get_text(" ", strip=True)
         if not anchor_text:
+            continue
+        href = str(anchor["href"]).lower()
+        if not any(token in href for token in ("/job", "/jobs", "/career", "/careers")):
             continue
         if not is_relevant_role(anchor_text, "", settings):
             continue
@@ -133,4 +137,3 @@ def extract_jobs_from_html(
         )
 
     return jobs
-

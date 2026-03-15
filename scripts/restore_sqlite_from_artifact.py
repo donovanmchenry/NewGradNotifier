@@ -8,7 +8,14 @@ import os
 import zipfile
 from pathlib import Path
 from urllib.error import HTTPError
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener, urlopen
+
+
+class _NoRedirectHandler(HTTPRedirectHandler):
+    """Preserve redirect responses so we can follow signed URLs manually."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[override]
+        return None
 
 
 def _request_json(url: str, token: str) -> dict:
@@ -24,17 +31,28 @@ def _request_json(url: str, token: str) -> dict:
         return json.load(response)
 
 
-def _request_bytes(url: str, token: str) -> bytes:
+def _download_artifact_archive(url: str, token: str) -> bytes:
+    opener = build_opener(_NoRedirectHandler())
     request = Request(
         url,
         headers={
-            "Accept": "application/vnd.github+json",
+            "Accept": "application/octet-stream",
             "Authorization": f"Bearer {token}",
             "User-Agent": "newgrad-notifier",
         },
     )
-    with urlopen(request) as response:
-        return response.read()
+    try:
+        with opener.open(request) as response:
+            return response.read()
+    except HTTPError as exc:
+        if exc.code not in {302, 303, 307, 308}:
+            raise
+        redirect_url = exc.headers.get("Location")
+        if not redirect_url:
+            raise
+        signed_request = Request(redirect_url, headers={"User-Agent": "newgrad-notifier"})
+        with urlopen(signed_request) as response:
+            return response.read()
 
 
 def main() -> int:
@@ -66,7 +84,7 @@ def main() -> int:
     artifacts.sort(key=lambda item: item.get("created_at", ""), reverse=True)
     latest = artifacts[0]
     try:
-        archive_bytes = _request_bytes(latest["archive_download_url"], token)
+        archive_bytes = _download_artifact_archive(latest["archive_download_url"], token)
     except HTTPError as exc:
         print(f"Unable to download artifact ({exc.code}); skipping restore.")
         return 0
@@ -80,4 +98,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
