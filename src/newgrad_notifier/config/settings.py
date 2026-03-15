@@ -39,7 +39,8 @@ class EmailSettings(BaseModel):
 
 class LLMSettings(BaseModel):
     provider: str = "openai"
-    model: str = "gpt-5.4-thinking"
+    model: str = "gpt-5-mini"
+    fallback_models: list[str] = Field(default_factory=lambda: ["gpt-4.1-mini"])
     openai_api_key: str = ""
     enabled: bool = True
 
@@ -163,6 +164,7 @@ def _apply_environment_overrides(payload: dict[str, Any]) -> dict[str, Any]:
         "SQLITE_PATH": ("database", "sqlite_path"),
         "OPENAI_API_KEY": ("llm", "openai_api_key"),
         "OPENAI_MODEL": ("llm", "model"),
+        "OPENAI_FALLBACK_MODELS": ("llm", "fallback_models"),
         "RESEND_API_KEY": ("email", "resend_api_key"),
         "SMTP_TLS": ("email", "smtp_use_tls"),
         "SMTP_HOST": ("email", "smtp_host"),
@@ -193,6 +195,8 @@ def _apply_environment_overrides(payload: dict[str, Any]) -> dict[str, Any]:
             cursor[path_parts[-1]] = int(value)
         elif path_parts[-1] in {"smtp_use_tls", "immediate_alerts_enabled"}:
             cursor[path_parts[-1]] = value.lower() in {"1", "true", "yes"}
+        elif path_parts[-1] == "fallback_models":
+            cursor[path_parts[-1]] = [item.strip() for item in value.split(",") if item.strip()]
         else:
             cursor[path_parts[-1]] = value
     return merged

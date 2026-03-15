@@ -1,5 +1,3 @@
-import os
-
 import pytest
 
 from newgrad_notifier.config.settings import SettingsValidationError, load_settings
@@ -31,6 +29,21 @@ def test_config_loading_uses_production_env_names(monkeypatch):
     assert settings.runtime_warnings
 
 
+def test_config_loading_supports_openai_fallback_models(monkeypatch):
+    monkeypatch.setenv("EMAIL_PROVIDER", "resend")
+    monkeypatch.setenv("EMAIL_RECIPIENT", "dzmchenry@gmail.com")
+    monkeypatch.setenv("EMAIL_SENDER", "NewGrad Notifier <onboarding@resend.dev>")
+    monkeypatch.setenv("RESEND_API_KEY", "resend-test-key")
+    monkeypatch.setenv("OPENAI_API_KEY", "openai-test-key")
+    monkeypatch.setenv("OPENAI_MODEL", "gpt-5-mini")
+    monkeypatch.setenv("OPENAI_FALLBACK_MODELS", "gpt-4.1-mini,gpt-4o-mini")
+
+    settings = load_settings("config/production.toml")
+
+    assert settings.llm.model == "gpt-5-mini"
+    assert settings.llm.fallback_models == ["gpt-4.1-mini", "gpt-4o-mini"]
+
+
 def test_smtp_validation_fails_without_password(monkeypatch):
     monkeypatch.setenv("EMAIL_PROVIDER", "smtp")
     monkeypatch.setenv("EMAIL_RECIPIENT", "dzmchenry@gmail.com")
@@ -42,4 +55,3 @@ def test_smtp_validation_fails_without_password(monkeypatch):
 
     with pytest.raises(SettingsValidationError):
         load_settings("config/production.toml")
-

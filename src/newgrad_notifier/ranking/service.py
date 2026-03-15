@@ -29,7 +29,11 @@ class RankingService:
             return None
         from newgrad_notifier.llm.openai_ranker import OpenAIRanker
 
-        return OpenAIRanker(api_key=settings.llm.openai_api_key, model=settings.llm.model)
+        return OpenAIRanker(
+            api_key=settings.llm.openai_api_key,
+            model=settings.llm.model,
+            fallback_models=settings.llm.fallback_models,
+        )
 
     def rank(self, job: NormalizedJob) -> RankingResult:
         company_priority = self.company_priority.get(job.company_name.lower(), 3)

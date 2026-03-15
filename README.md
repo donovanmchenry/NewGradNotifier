@@ -114,6 +114,7 @@ These are the production env var names expected by the app:
 - `DATABASE_URL` for PostgreSQL override
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL`
+- `OPENAI_FALLBACK_MODELS`
 - `RUN_TIME_LOCAL`
 - `TIME_ZONE`
 
@@ -144,7 +145,8 @@ SMTP still works as a fallback provider.
 
 ## OpenAI Ranking Behavior
 
-- Production config is set to use OpenAI with `OPENAI_MODEL=gpt-5.4-thinking`
+- Production config defaults to `OPENAI_MODEL=gpt-5-mini`
+- If the configured model is unavailable to your API key, the ranker automatically retries with `OPENAI_FALLBACK_MODELS` before falling back to heuristics
 - If `OPENAI_API_KEY` is not set, the app logs a warning and automatically falls back to heuristic-only scoring
 - The pipeline does not crash when OpenAI is unavailable
 
