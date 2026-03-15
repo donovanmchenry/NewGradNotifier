@@ -9,9 +9,10 @@ url = "sqlite:///./data/newgradnotifier.db"
 echo = false
 
 [email]
-provider = "smtp"
+provider = "resend"
 recipient = "dzmchenry@gmail.com"
-sender = "dzmchenry@gmail.com"
+sender = "NewGrad Notifier <onboarding@resend.dev>"
+resend_api_key = ""
 smtp_host = "smtp.gmail.com"
 smtp_port = 587
 smtp_username = "dzmchenry@gmail.com"

@@ -15,8 +15,9 @@ jobs:
     timeout-minutes: 45
     env:
       EMAIL_RECIPIENT: ${{ vars.EMAIL_RECIPIENT || 'dzmchenry@gmail.com' }}
-      EMAIL_SENDER: ${{ vars.EMAIL_SENDER || 'dzmchenry@gmail.com' }}
-      EMAIL_PROVIDER: ${{ vars.EMAIL_PROVIDER || 'smtp' }}
+      EMAIL_SENDER: ${{ vars.EMAIL_SENDER || 'NewGrad Notifier <onboarding@resend.dev>' }}
+      EMAIL_PROVIDER: ${{ vars.EMAIL_PROVIDER || 'resend' }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       SMTP_HOST: ${{ vars.SMTP_HOST || 'smtp.gmail.com' }}
       SMTP_PORT: ${{ vars.SMTP_PORT || '587' }}
       SMTP_USERNAME: ${{ vars.SMTP_USERNAME || 'dzmchenry@gmail.com' }}
@@ -81,4 +82,3 @@ jobs:
           path: data/newgradnotifier.db
           if-no-files-found: error
           retention-days: 30
-

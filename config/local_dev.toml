@@ -12,6 +12,7 @@ echo = false
 provider = "file"
 recipient = "donovan@example.com"
 sender = "newgrad-notifier@example.com"
+resend_api_key = ""
 outbox_dir = "outbox"
 
 [llm]

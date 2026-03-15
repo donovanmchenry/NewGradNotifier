@@ -7,6 +7,8 @@ from abc import ABC, abstractmethod
 from email.message import EmailMessage
 from pathlib import Path
 
+import requests
+
 from newgrad_notifier.config.settings import EmailSettings
 
 
@@ -61,9 +63,35 @@ class SMTPEmailSender(EmailSender):
             client.send_message(message)
 
 
+class ResendEmailSender(EmailSender):
+    """Resend API sender for transactional notifications."""
+
+    def __init__(self, settings: EmailSettings) -> None:
+        self.settings = settings
+
+    def send(self, subject: str, body_text: str, recipient: str) -> None:
+        response = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {self.settings.resend_api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "from": self.settings.sender,
+                "to": [recipient],
+                "subject": subject,
+                "text": body_text,
+            },
+            timeout=20,
+        )
+        response.raise_for_status()
+
+
 def build_email_sender(settings: EmailSettings) -> EmailSender:
     """Construct the configured email sender."""
 
+    if settings.provider == "resend":
+        return ResendEmailSender(settings)
     if settings.provider == "smtp":
         return SMTPEmailSender(settings)
     if settings.provider == "file":

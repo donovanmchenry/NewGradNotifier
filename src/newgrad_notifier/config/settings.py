@@ -28,6 +28,7 @@ class EmailSettings(BaseModel):
     provider: str = "console"
     recipient: str
     sender: str
+    resend_api_key: str = ""
     smtp_host: str = ""
     smtp_port: int = 587
     smtp_username: str = ""
@@ -162,6 +163,7 @@ def _apply_environment_overrides(payload: dict[str, Any]) -> dict[str, Any]:
         "SQLITE_PATH": ("database", "sqlite_path"),
         "OPENAI_API_KEY": ("llm", "openai_api_key"),
         "OPENAI_MODEL": ("llm", "model"),
+        "RESEND_API_KEY": ("email", "resend_api_key"),
         "SMTP_TLS": ("email", "smtp_use_tls"),
         "SMTP_HOST": ("email", "smtp_host"),
         "SMTP_PORT": ("email", "smtp_port"),
@@ -232,7 +234,14 @@ def _derive_schedule(settings: AppSettings) -> None:
 
 def _validate_required_settings(settings: AppSettings) -> None:
     missing: list[str] = []
-    if settings.email.provider == "smtp":
+    if settings.email.provider == "resend":
+        if not settings.email.recipient:
+            missing.append("EMAIL_RECIPIENT")
+        if not settings.email.sender:
+            missing.append("EMAIL_SENDER")
+        if not settings.email.resend_api_key:
+            missing.append("RESEND_API_KEY")
+    elif settings.email.provider == "smtp":
         if not settings.email.recipient:
             missing.append("EMAIL_RECIPIENT")
         if not settings.email.sender:
@@ -247,6 +256,12 @@ def _validate_required_settings(settings: AppSettings) -> None:
             missing.append("SMTP_PASSWORD")
     if missing:
         missing_csv = ", ".join(missing)
+        if settings.email.provider == "resend":
+            raise SettingsValidationError(
+                f"Missing required email settings for Resend delivery: {missing_csv}. "
+                "Set RESEND_API_KEY and use a valid from address. For sending beyond your own address, "
+                "verify a custom domain in Resend."
+            )
         raise SettingsValidationError(
             f"Missing required email settings for SMTP delivery: {missing_csv}. "
             "For Gmail, use a Google App Password in SMTP_PASSWORD."

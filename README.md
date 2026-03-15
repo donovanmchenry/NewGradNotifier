@@ -101,6 +101,7 @@ These are the production env var names expected by the app:
 - `EMAIL_RECIPIENT`
 - `EMAIL_SENDER`
 - `EMAIL_PROVIDER`
+- `RESEND_API_KEY`
 - `SMTP_HOST`
 - `SMTP_PORT`
 - `SMTP_USERNAME`
@@ -118,23 +119,28 @@ These are the production env var names expected by the app:
 
 See [`.env.example`](.env.example) for the exact quick-start template.
 
-## Gmail SMTP Setup
+## Resend Setup
 
-This project is configured for Gmail SMTP.
+This project is now configured for Resend by default.
+
+- Set `EMAIL_PROVIDER=resend`
+- Set `RESEND_API_KEY` to your Resend API key
+- For initial testing, you can use `EMAIL_SENDER=NewGrad Notifier <onboarding@resend.dev>`
+
+Important:
+
+- Resend limits unverified accounts to sending only to your own address until you verify a custom domain.
+- For real production sending, verify a domain in Resend and switch the sender to something like `NewGrad Notifier <jobs@yourdomain.com>`.
+
+## Gmail SMTP Fallback
+
+SMTP still works as a fallback provider.
 
 - Use `smtp.gmail.com`
 - Use port `587`
 - Use TLS
 - Set `SMTP_USERNAME=dzmchenry@gmail.com`
 - Set `SMTP_PASSWORD` to a Google App Password
-
-Important:
-
-- Do not use your normal Gmail password.
-- In your Google account, enable 2-Step Verification first.
-- Then create an App Password and use that value for `SMTP_PASSWORD`.
-
-If `EMAIL_PROVIDER=smtp` and `SMTP_PASSWORD` is missing, startup validation will fail clearly.
 
 ## OpenAI Ranking Behavior
 
@@ -167,8 +173,9 @@ What it does:
 
 ### GitHub Actions secrets to add
 
-- `SMTP_PASSWORD`
+- `RESEND_API_KEY`
 - `OPENAI_API_KEY` (optional but recommended)
+- `SMTP_PASSWORD` only if you want SMTP fallback
 
 ### GitHub Actions variables to add
 
@@ -177,6 +184,7 @@ You can set these as repository variables, though the workflow already includes 
 - `EMAIL_RECIPIENT`
 - `EMAIL_SENDER`
 - `EMAIL_PROVIDER`
+- `RESEND_API_KEY` should be stored as a secret, not a variable
 - `SMTP_HOST`
 - `SMTP_PORT`
 - `SMTP_USERNAME`
@@ -229,7 +237,7 @@ Typical next steps:
 2. In Render, create a new Blueprint or Cron Job from the repo.
 3. Point Render at `render.yaml`.
 4. Add environment variables:
-   - SMTP settings
+   - Resend settings
    - `OPENAI_API_KEY`
    - later `DATABASE_URL` from Render Postgres
 5. Deploy and verify the first run from Render logs.

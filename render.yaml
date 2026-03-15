@@ -10,9 +10,11 @@ services:
       - key: EMAIL_RECIPIENT
         value: dzmchenry@gmail.com
       - key: EMAIL_SENDER
-        value: dzmchenry@gmail.com
+        value: NewGrad Notifier <onboarding@resend.dev>
       - key: EMAIL_PROVIDER
-        value: smtp
+        value: resend
+      - key: RESEND_API_KEY
+        sync: false
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT
