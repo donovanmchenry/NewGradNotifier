@@ -33,26 +33,29 @@ def _request_json(url: str, token: str) -> dict:
 
 def _download_artifact_archive(url: str, token: str) -> bytes:
     opener = build_opener(_NoRedirectHandler())
-    request = Request(
-        url,
-        headers={
-            "Accept": "application/octet-stream",
+    for accept_header in ("application/vnd.github+json", ""):
+        request_headers = {
             "Authorization": f"Bearer {token}",
             "User-Agent": "newgrad-notifier",
-        },
-    )
-    try:
-        with opener.open(request) as response:
-            return response.read()
-    except HTTPError as exc:
-        if exc.code not in {302, 303, 307, 308}:
-            raise
-        redirect_url = exc.headers.get("Location")
-        if not redirect_url:
-            raise
-        signed_request = Request(redirect_url, headers={"User-Agent": "newgrad-notifier"})
-        with urlopen(signed_request) as response:
-            return response.read()
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        if accept_header:
+            request_headers["Accept"] = accept_header
+        request = Request(url, headers=request_headers)
+        try:
+            with opener.open(request) as response:
+                return response.read()
+        except HTTPError as exc:
+            if exc.code in {302, 303, 307, 308}:
+                redirect_url = exc.headers.get("Location")
+                if not redirect_url:
+                    raise
+                signed_request = Request(redirect_url, headers={"User-Agent": "newgrad-notifier"})
+                with urlopen(signed_request) as response:
+                    return response.read()
+            if exc.code != 415 or not accept_header:
+                raise
+    raise RuntimeError("Unable to download artifact archive after retrying request variants.")
 
 
 def main() -> int:
@@ -84,7 +87,13 @@ def main() -> int:
     artifacts.sort(key=lambda item: item.get("created_at", ""), reverse=True)
     latest = artifacts[0]
     try:
-        archive_bytes = _download_artifact_archive(latest["archive_download_url"], token)
+        download_url = latest.get("archive_download_url")
+        if not download_url and latest.get("id"):
+            download_url = f"https://api.github.com/repos/{repository}/actions/artifacts/{latest['id']}/zip"
+        if not download_url:
+            print("Latest SQLite artifact did not include a download URL; skipping restore.")
+            return 0
+        archive_bytes = _download_artifact_archive(download_url, token)
     except HTTPError as exc:
         print(f"Unable to download artifact ({exc.code}); skipping restore.")
         return 0

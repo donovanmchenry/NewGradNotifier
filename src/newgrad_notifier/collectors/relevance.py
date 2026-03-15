@@ -133,6 +133,59 @@ US_LOCATION_HINTS = (
     "us-only",
     "u.s.-only",
 )
+US_STATE_NAMES = (
+    "alabama",
+    "alaska",
+    "arizona",
+    "arkansas",
+    "california",
+    "colorado",
+    "connecticut",
+    "delaware",
+    "florida",
+    "georgia",
+    "hawaii",
+    "idaho",
+    "illinois",
+    "indiana",
+    "iowa",
+    "kansas",
+    "kentucky",
+    "louisiana",
+    "maine",
+    "maryland",
+    "massachusetts",
+    "michigan",
+    "minnesota",
+    "mississippi",
+    "missouri",
+    "montana",
+    "nebraska",
+    "nevada",
+    "new hampshire",
+    "new jersey",
+    "new mexico",
+    "new york",
+    "north carolina",
+    "north dakota",
+    "ohio",
+    "oklahoma",
+    "oregon",
+    "pennsylvania",
+    "rhode island",
+    "south carolina",
+    "south dakota",
+    "tennessee",
+    "texas",
+    "utah",
+    "vermont",
+    "virginia",
+    "washington",
+    "west virginia",
+    "wisconsin",
+    "wyoming",
+    "district of columbia",
+)
 
 US_STATE_ABBREVIATIONS = {
     "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY",
@@ -152,7 +205,7 @@ def _contains_any(text: str, hints: tuple[str, ...]) -> bool:
 
 def _has_us_signal(location_text: str) -> bool:
     lowered = location_text.lower()
-    if _contains_any(lowered, US_LOCATION_HINTS):
+    if _contains_any(lowered, US_LOCATION_HINTS) or _contains_any(lowered, US_STATE_NAMES):
         return True
     state_match = US_STATE_PATTERN.search(location_text)
     return bool(state_match and state_match.group(1) in US_STATE_ABBREVIATIONS)
