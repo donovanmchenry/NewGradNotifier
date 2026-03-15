@@ -113,7 +113,7 @@ def run_pipeline_once(config_path: str | None = None) -> None:
                         email_sender.send(alert_subject, alert_body, settings.email.recipient)
 
             stats.total_errors = len(errors)
-            subject, body = render_daily_digest(
+            rendered_digest = render_daily_digest(
                 run_date=run.started_at,
                 ranked_jobs=ranked_jobs,
                 stats=stats,
@@ -121,8 +121,19 @@ def run_pipeline_once(config_path: str | None = None) -> None:
                 high_signal_threshold=settings.thresholds.high_signal_fit,
                 top_priority_threshold=settings.thresholds.top_priority_fit,
             )
-            email_sender.send(subject, body, settings.email.recipient)
-            repository.persist_digest(run.id, settings.email.recipient, subject, body, stats)
+            email_sender.send(
+                rendered_digest.subject,
+                rendered_digest.text_body,
+                settings.email.recipient,
+                body_html=rendered_digest.html_body,
+            )
+            repository.persist_digest(
+                run.id,
+                settings.email.recipient,
+                rendered_digest.subject,
+                rendered_digest.text_body,
+                stats,
+            )
             repository.complete_run(run, stats, errors)
     finally:
         http_client.close()

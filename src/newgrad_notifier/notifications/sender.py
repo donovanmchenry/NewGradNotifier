@@ -16,18 +16,21 @@ class EmailSender(ABC):
     """Email delivery contract."""
 
     @abstractmethod
-    def send(self, subject: str, body_text: str, recipient: str) -> None:
-        """Send a plaintext message."""
+    def send(self, subject: str, body_text: str, recipient: str, body_html: str | None = None) -> None:
+        """Send a message with plaintext and optional HTML."""
 
 
 class ConsoleEmailSender(EmailSender):
     """Print digests to stdout for local development."""
 
-    def send(self, subject: str, body_text: str, recipient: str) -> None:
+    def send(self, subject: str, body_text: str, recipient: str, body_html: str | None = None) -> None:
         print(f"To: {recipient}")
         print(f"Subject: {subject}")
         print()
         print(body_text)
+        if body_html:
+            print("\n--- HTML ---\n")
+            print(body_html)
 
 
 class FileEmailSender(EmailSender):
@@ -37,10 +40,13 @@ class FileEmailSender(EmailSender):
         self.outbox_dir = outbox_dir
         self.outbox_dir.mkdir(parents=True, exist_ok=True)
 
-    def send(self, subject: str, body_text: str, recipient: str) -> None:
+    def send(self, subject: str, body_text: str, recipient: str, body_html: str | None = None) -> None:
         safe_subject = subject.replace("/", "-").replace(" ", "_")
         file_path = self.outbox_dir / f"{safe_subject}.txt"
         file_path.write_text(f"To: {recipient}\nSubject: {subject}\n\n{body_text}", encoding="utf-8")
+        if body_html:
+            html_path = self.outbox_dir / f"{safe_subject}.html"
+            html_path.write_text(body_html, encoding="utf-8")
 
 
 class SMTPEmailSender(EmailSender):
@@ -49,12 +55,14 @@ class SMTPEmailSender(EmailSender):
     def __init__(self, settings: EmailSettings) -> None:
         self.settings = settings
 
-    def send(self, subject: str, body_text: str, recipient: str) -> None:
+    def send(self, subject: str, body_text: str, recipient: str, body_html: str | None = None) -> None:
         message = EmailMessage()
         message["Subject"] = subject
         message["From"] = self.settings.sender
         message["To"] = recipient
         message.set_content(body_text)
+        if body_html:
+            message.add_alternative(body_html, subtype="html")
         with smtplib.SMTP(self.settings.smtp_host, self.settings.smtp_port) as client:
             if self.settings.smtp_use_tls:
                 client.starttls()
@@ -69,19 +77,22 @@ class ResendEmailSender(EmailSender):
     def __init__(self, settings: EmailSettings) -> None:
         self.settings = settings
 
-    def send(self, subject: str, body_text: str, recipient: str) -> None:
+    def send(self, subject: str, body_text: str, recipient: str, body_html: str | None = None) -> None:
+        payload = {
+            "from": self.settings.sender,
+            "to": [recipient],
+            "subject": subject,
+            "text": body_text,
+        }
+        if body_html:
+            payload["html"] = body_html
         response = requests.post(
             "https://api.resend.com/emails",
             headers={
                 "Authorization": f"Bearer {self.settings.resend_api_key}",
                 "Content-Type": "application/json",
             },
-            json={
-                "from": self.settings.sender,
-                "to": [recipient],
-                "subject": subject,
-                "text": body_text,
-            },
+            json=payload,
             timeout=20,
         )
         response.raise_for_status()

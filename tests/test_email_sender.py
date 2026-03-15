@@ -1,5 +1,7 @@
+from pathlib import Path
+
 from newgrad_notifier.config.settings import EmailSettings
-from newgrad_notifier.notifications.sender import ResendEmailSender, SMTPEmailSender, build_email_sender
+from newgrad_notifier.notifications.sender import FileEmailSender, ResendEmailSender, SMTPEmailSender, build_email_sender
 
 
 def test_build_email_sender_prefers_resend():
@@ -29,3 +31,17 @@ def test_build_email_sender_supports_smtp_fallback():
     )
 
     assert isinstance(sender, SMTPEmailSender)
+
+
+def test_file_email_sender_writes_html_variant(tmp_path):
+    sender = FileEmailSender(Path(tmp_path))
+
+    sender.send(
+        "Daily Digest",
+        "plain body",
+        "dzmchenry@gmail.com",
+        body_html="<html><body><strong>html body</strong></body></html>",
+    )
+
+    assert (tmp_path / "Daily_Digest.txt").read_text(encoding="utf-8").endswith("plain body")
+    assert "html body" in (tmp_path / "Daily_Digest.html").read_text(encoding="utf-8")

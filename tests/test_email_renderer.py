@@ -44,7 +44,7 @@ def test_email_renderer_outputs_required_sections():
         lifecycle_state=JobLifecycleState.NEW,
     )
 
-    subject, body = render_daily_digest(
+    rendered = render_daily_digest(
         run_date=datetime(2026, 8, 22, tzinfo=UTC),
         ranked_jobs=[ranked_job],
         stats=DigestStats(source_counts={"simplify": 1}),
@@ -53,7 +53,9 @@ def test_email_renderer_outputs_required_sections():
         top_priority_threshold=80,
     )
 
-    assert "2026-08-22" in subject
-    assert "Section 1: Top new matches today" in body
-    assert "Apply: https://example.com/job" in body
-
+    assert "2026-08-22" in rendered.subject
+    assert "Section 1: Top new matches today" in rendered.text_body
+    assert "Apply: https://example.com/job" in rendered.text_body
+    assert "Daily New Grad SWE Digest" in rendered.html_body
+    assert "Open application" in rendered.html_body
+    assert "Figma" in rendered.html_body

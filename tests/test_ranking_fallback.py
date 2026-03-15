@@ -39,7 +39,7 @@ class _FakeOpenAIClient:
         self.chat = self
         self.completions = self
 
-    def create(self, *, model, temperature, response_format, messages):
+    def create(self, *, model, response_format, messages):
         self.attempted_models.append(model)
         if model == "gpt-5-mini":
             raise RuntimeError("The model 'gpt-5-mini' does not exist or you do not have access to it.")

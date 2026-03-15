@@ -48,7 +48,6 @@ class OpenAIRanker(LLMRanker):
             try:
                 response = self.client.chat.completions.create(
                     model=candidate_model,
-                    temperature=0.2,
                     response_format={"type": "json_object"},
                     messages=build_ranking_messages(profile, job, heuristic_result),
                 )
