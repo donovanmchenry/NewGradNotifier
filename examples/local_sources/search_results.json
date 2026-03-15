@@ -1,0 +1,21 @@
+{
+  "queries": {
+    "software engineer new grad": [
+      {
+        "title": "Discord Product Software Engineer, New Grad",
+        "url": "examples/local_sources/discord_job.html",
+        "snippet": "New grad product engineer role at Discord.",
+        "source_name": "fixture_search"
+      }
+    ],
+    "early career software engineer": [
+      {
+        "title": "Reddit Backend Software Engineer I",
+        "url": "examples/local_sources/reddit_job.html",
+        "snippet": "Early career backend SWE role at Reddit.",
+        "source_name": "fixture_search"
+      }
+    ]
+  }
+}
+

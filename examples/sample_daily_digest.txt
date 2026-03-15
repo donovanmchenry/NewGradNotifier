@@ -1,0 +1,47 @@
+To: donovan@example.com
+Subject: [NewGradNotifier] 2026-03-15 - 4 high-signal new roles
+
+Daily New Grad SWE Digest for 2026-03-15
+
+Section 1: Top new matches today
+(none)
+
+Section 2: Reach roles worth applying to
+- Figma | Software Engineer, New Grad 2027 | Remote, United States | posted 2026-08-20T12:00:00+00:00 | fit 75 | difficulty 49 | apply_if_interested
+  Apply: https://boards.greenhouse.io/figma/jobs/12345
+  Why: Fit 75/100: strongest signals are role_match, graduation_match, skill_overlap, product_profile, location_match, seniority_match, brand_bonus. Difficulty 49/100: driven by baseline, company_bar, competition.
+- Plaid | Software Engineer, University Graduate | San Francisco, CA | posted 2026-08-21T08:00:00+00:00 | fit 72 | difficulty 49 | apply_if_interested
+  Apply: https://jobs.lever.co/plaid/plaid-001
+  Why: Fit 72/100: strongest signals are role_match, graduation_match, skill_overlap, product_profile, seniority_match, brand_bonus. Difficulty 49/100: driven by baseline, company_bar, competition.
+- Discord | Product Software Engineer, New Grad | San Francisco, CA, United States | posted 2026-08-22T00:00:00 | fit 70 | difficulty 49 | apply_if_interested
+  Apply: https://discord.com/jobs/product-software-engineer-new-grad
+  Why: Fit 70/100: strongest signals are role_match, graduation_match, skill_overlap, product_profile, location_match, seniority_match, brand_bonus. Difficulty 49/100: driven by baseline, company_bar, competition.
+- Canva | Full Stack Software Engineer, Early Career | Remote, US, United States | posted 2026-08-22T00:00:00 | fit 65 | difficulty 34 | apply_if_interested
+  Apply: https://www.canva.com/careers/full-stack-software-engineer-early-career
+  Why: Fit 65/100: strongest signals are role_match, entry_level_signal, skill_overlap, product_profile, location_match, seniority_match, brand_bonus. Difficulty 34/100: driven by baseline, company_bar.
+
+Section 3: Lower-priority or mismatched roles
+- OpenAI | Software Engineer, University Graduate | San Francisco, CA | posted 2026-08-21T13:00:00+00:00 | fit 61 | difficulty 63 | low_priority
+  Apply: https://openai.com/careers/software-engineer-university-graduate
+  Why: Fit 61/100: strongest signals are role_match, graduation_match, skill_overlap, product_profile, seniority_match, brand_bonus. Difficulty 63/100: driven by baseline, company_bar, competition.
+- Hewlett Packard Enterprise | Associate Software Engineer | Remote, United States | posted 2026-08-22T07:45:00+00:00 | fit 60 | difficulty 34 | low_priority
+  Apply: https://careers.hpe.com/job/associate-software-engineer
+  Why: Fit 60/100: strongest signals are role_match, entry_level_signal, skill_overlap, product_profile, experience_signal, location_match, seniority_match, brand_bonus. Difficulty 34/100: driven by baseline, company_bar.
+- Reddit | Backend Software Engineer I | Remote, US, United States | posted 2026-08-22T00:00:00 | fit 60 | difficulty 34 | low_priority
+  Apply: https://www.redditinc.com/careers/backend-software-engineer-i
+  Why: Fit 60/100: strongest signals are role_match, entry_level_signal, skill_overlap, product_profile, location_match, seniority_match, brand_bonus. Difficulty 34/100: driven by baseline, company_bar.
+- Tesla | Backend Software Engineer I | Austin, TX | posted 2026-08-21T10:30:00+00:00 | fit 57 | difficulty 51 | low_priority
+  Apply: https://jobs.smartrecruiters.com/Tesla/backend-software-engineer-i
+  Why: Fit 57/100: strongest signals are role_match, entry_level_signal, skill_overlap, product_profile, seniority_match, brand_bonus. Difficulty 51/100: driven by baseline, company_bar, niche_requirements.
+- Cloudflare | Frontend Software Engineer I | San Francisco, CA | posted 2026-08-21T09:30:00+00:00 | fit 54 | difficulty 25 | low_priority
+  Apply: https://www.cloudflare.com/careers/jobs/fe1
+  Why: Fit 54/100: strongest signals are role_match, entry_level_signal, skill_overlap, product_profile, seniority_match. Difficulty 25/100: driven by baseline.
+
+Section 4: Summary stats by source
+- ats: 5
+- company_pages: 1
+- simplify: 2
+- web_search: 2
+
+Section 5: Errors or failures
+(none)

@@ -1,0 +1,12 @@
+{
+  "jobs": [
+    {
+      "id": 12345,
+      "title": "Software Engineer, New Grad 2027",
+      "absolute_url": "https://boards.greenhouse.io/figma/jobs/12345",
+      "updated_at": "2026-08-20T12:00:00Z",
+      "location": {"name": "Remote, United States"},
+      "content": "Class of 2027 new grad role building collaborative product experiences with React, TypeScript, and backend APIs."
+    }
+  ]
+}

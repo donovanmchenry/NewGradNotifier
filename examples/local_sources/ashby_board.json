@@ -1,0 +1,18 @@
+{
+  "data": {
+    "jobsBoard": {
+      "jobs": [
+        {
+          "id": "openai-ng-1",
+          "title": "Software Engineer, University Graduate",
+          "locationName": "San Francisco, CA",
+          "publishedDate": "2026-08-21T13:00:00Z",
+          "applyUrl": "https://openai.com/careers/software-engineer-university-graduate",
+          "descriptionHtml": "<p>Join OpenAI as a university graduate software engineer working across product surfaces, Python services, TypeScript apps, and APIs.</p>",
+          "employmentType": "Full-time"
+        }
+      ]
+    }
+  }
+}
+

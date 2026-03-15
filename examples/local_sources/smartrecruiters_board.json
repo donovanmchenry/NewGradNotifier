@@ -1,0 +1,19 @@
+{
+  "content": [
+    {
+      "id": "tesla-backend-1",
+      "name": "Backend Software Engineer I",
+      "ref": "https://jobs.smartrecruiters.com/Tesla/backend-software-engineer-i",
+      "releasedDate": "2026-08-21T10:30:00Z",
+      "location": {"city": "Austin", "region": "TX"},
+      "jobAd": {
+        "sections": {
+          "jobDescription": {
+            "text": "Entry-level backend application engineering role requiring Python, C++, APIs, Docker, and distributed systems."
+          }
+        }
+      }
+    }
+  ]
+}
+

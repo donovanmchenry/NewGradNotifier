@@ -1,0 +1,66 @@
+[
+  {
+    "slug": "canva",
+    "name": "Canva",
+    "homepage": "https://www.canva.com",
+    "careers_url": "examples/local_sources/canva_careers.html",
+    "priority_tier": 2,
+    "enabled": true
+  },
+  {
+    "slug": "discord",
+    "name": "Discord",
+    "homepage": "https://discord.com",
+    "careers_url": "https://discord.com/jobs",
+    "priority_tier": 1,
+    "enabled": false
+  },
+  {
+    "slug": "reddit",
+    "name": "Reddit",
+    "homepage": "https://www.redditinc.com",
+    "careers_url": "https://www.redditinc.com/careers",
+    "priority_tier": 2,
+    "enabled": false
+  },
+  {
+    "slug": "figma",
+    "name": "Figma",
+    "homepage": "https://www.figma.com",
+    "careers_url": "https://www.figma.com/careers",
+    "priority_tier": 1,
+    "enabled": false
+  },
+  {
+    "slug": "plaid",
+    "name": "Plaid",
+    "homepage": "https://plaid.com",
+    "careers_url": "https://plaid.com/careers",
+    "priority_tier": 1,
+    "enabled": false
+  },
+  {
+    "slug": "openai",
+    "name": "OpenAI",
+    "homepage": "https://openai.com",
+    "careers_url": "https://openai.com/careers",
+    "priority_tier": 1,
+    "enabled": false
+  },
+  {
+    "slug": "tesla",
+    "name": "Tesla",
+    "homepage": "https://www.tesla.com",
+    "careers_url": "https://www.tesla.com/careers",
+    "priority_tier": 1,
+    "enabled": false
+  },
+  {
+    "slug": "hewlett-packard-enterprise",
+    "name": "Hewlett Packard Enterprise",
+    "homepage": "https://www.hpe.com",
+    "careers_url": "https://careers.hpe.com",
+    "priority_tier": 2,
+    "enabled": false
+  }
+]

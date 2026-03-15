@@ -1,0 +1,19 @@
+[
+  {
+    "id": "plaid-001",
+    "text": "Software Engineer, University Graduate",
+    "hostedUrl": "https://jobs.lever.co/plaid/plaid-001",
+    "createdAt": "2026-08-21T08:00:00Z",
+    "descriptionPlain": "Plaid is hiring a university graduate software engineer to build product-facing APIs, React experiences, and backend services using TypeScript, Node.js, and Python.",
+    "categories": {"location": "San Francisco, CA"}
+  },
+  {
+    "id": "plaid-002",
+    "text": "Quantitative Analyst, Early Career",
+    "hostedUrl": "https://jobs.lever.co/plaid/plaid-002",
+    "createdAt": "2026-08-21T09:00:00Z",
+    "descriptionPlain": "Analyst role for data-heavy quantitative modeling.",
+    "categories": {"location": "New York, NY"}
+  }
+]
+
