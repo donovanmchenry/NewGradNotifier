@@ -1,0 +1,176 @@
+app_name = "newgrad-notifier"
+environment = "development"
+log_level = "INFO"
+cache_dir = ".cache/newgrad-notifier"
+
+[database]
+backend = "sqlite"
+url = "sqlite:///./data/newgradnotifier.db"
+sqlite_path = "./data/newgradnotifier.db"
+echo = false
+
+[email]
+provider = "console"
+recipient = "dzmchenry@gmail.com"
+sender = "dzmchenry@gmail.com"
+smtp_host = "smtp.gmail.com"
+smtp_port = 587
+smtp_username = "dzmchenry@gmail.com"
+smtp_password = ""
+smtp_use_tls = true
+outbox_dir = "outbox"
+
+[llm]
+provider = "openai"
+model = "gpt-5.4-thinking"
+openai_api_key = ""
+enabled = true
+
+[schedule]
+run_time_local = "08:00"
+cron = "0 8 * * *"
+timezone = "America/New_York"
+immediate_alerts_enabled = true
+immediate_alert_threshold = 92
+
+[thresholds]
+digest_min_fit = 65
+top_priority_fit = 80
+high_signal_fit = 65
+
+[collection]
+max_jobs_per_source = 250
+min_domain_interval_seconds = 1.0
+request_timeout_seconds = 20
+cache_ttl_seconds = 21600
+use_playwright_for_js = false
+retry_attempts = 3
+
+[filters]
+remote_preference = "mixed"
+allowed_locations = ["United States", "Remote"]
+excluded_locations = []
+excluded_companies = []
+excluded_job_families = [
+  "IT Support",
+  "Help Desk",
+  "Analyst",
+  "Sales Engineer",
+  "Developer Advocate",
+  "Firmware",
+  "Embedded",
+  "Hardware",
+  "SRE",
+  "DevOps",
+  "Site Reliability",
+  "QA",
+]
+priority_companies = [
+  "Google",
+  "Meta",
+  "Microsoft",
+  "Amazon",
+  "Apple",
+  "Stripe",
+  "Databricks",
+  "Uber",
+  "Airbnb",
+  "Adobe",
+  "NVIDIA",
+  "Capital One",
+  "Bloomberg",
+]
+keywords = [
+  "software engineer new grad",
+  "new grad software engineer",
+  "university graduate software engineer",
+  "early career software engineer",
+  "software engineer i",
+  "associate software engineer",
+  "product engineer",
+  "frontend engineer",
+  "backend engineer",
+  "full stack engineer",
+]
+
+[candidate_profile]
+graduation_month = "May"
+graduation_year = 2027
+headline = "Strong full-stack and product-focused computer science student"
+internships = [
+  "Software Engineering Intern at Obsidian Security",
+  "Incoming Summer 2026 Software Engineer Intern at Universal Music Group",
+]
+preferred_roles = [
+  "software engineer",
+  "full-stack engineer",
+  "product engineer",
+  "frontend engineer",
+  "backend engineer",
+]
+preferred_locations = ["United States", "Remote"]
+skills = [
+  "Python",
+  "TypeScript",
+  "JavaScript",
+  "Java",
+  "C++",
+  "Bash",
+  "SQL",
+  "React",
+  "Next.js",
+  "MUI",
+  "Zustand",
+  "Apollo Client",
+  "FastAPI",
+  "Node.js",
+  "Express",
+  "Pydantic",
+  "REST APIs",
+  "Docker",
+  "Git",
+  "GitHub Actions",
+  "Selenium",
+  "FFmpeg",
+]
+project_signals = [
+  "Built a full-stack scheduler serving 800+ users with automation pipelines",
+  "Built an AI-powered educational video product",
+]
+
+[sources]
+simplify_enabled = true
+ats_enabled = true
+company_pages_enabled = true
+web_search_enabled = true
+
+[company_coverage]
+list_path = ""
+
+[web_search]
+provider = "duckduckgo_html"
+max_results_per_query = 10
+queries = []
+fixture_path = ""
+
+[[structured_feeds]]
+name = "sample_simplify_feed"
+url = ""
+format = "json"
+job_path = ""
+company_key = "company"
+title_key = "title"
+url_key = "url"
+location_key = "location"
+posted_at_key = "posted_at"
+description_key = "description"
+job_id_key = "job_id"
+
+[[ats_boards]]
+company_name = "Example Company"
+platform = "greenhouse"
+identifier = ""
+api_url = ""
+careers_url = ""
+priority_tier = 2
+enabled = false
