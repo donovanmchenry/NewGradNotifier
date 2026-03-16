@@ -158,6 +158,7 @@ The runtime target is:
 
 - `RUN_TIME_LOCAL=08:00`
 - `TIME_ZONE=America/New_York`
+- scheduled GitHub Actions automation begins on `2026-07-01`
 
 The app derives its cron expression from those values and APScheduler uses the configured timezone directly.
 
@@ -170,6 +171,7 @@ What it does:
 - runs on `workflow_dispatch`
 - runs on a UTC schedule twice per day (`12:00` and `13:00` UTC)
 - gates execution so the actual run only happens around `08:00` in `America/New_York`
+- skips scheduled runs entirely until `2026-07-01`
 - restores the last SQLite state artifact if one exists
 - runs tests
 - runs the production pipeline

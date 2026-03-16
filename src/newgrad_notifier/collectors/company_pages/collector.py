@@ -107,14 +107,15 @@ class CompanyPagesCollector(Collector):
                     extra={"context": {"company": company["name"], "error": str(exc)}},
                 )
                 continue
-            jobs.extend(
-                self._collect_discovered_ats_jobs(
-                    company=company,
-                    html=html,
-                    source_url=source_url,
-                    context=context,
-                )
+            discovered_jobs = self._collect_discovered_ats_jobs(
+                company=company,
+                html=html,
+                source_url=source_url,
+                context=context,
             )
+            jobs.extend(discovered_jobs)
+            if discovered_jobs:
+                continue
             jobs.extend(
                 extract_jobs_from_html(
                     html=html,

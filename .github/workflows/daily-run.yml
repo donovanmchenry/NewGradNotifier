@@ -32,6 +32,7 @@ jobs:
       OPENAI_FALLBACK_MODELS: gpt-4.1-mini
       RUN_TIME_LOCAL: ${{ vars.RUN_TIME_LOCAL || '08:00' }}
       TIME_ZONE: ${{ vars.TIME_ZONE || 'America/New_York' }}
+      SCHEDULE_START_DATE: 2026-07-01
       SQLITE_ARTIFACT_NAME: newgradnotifier-sqlite-state
     steps:
       - name: Checkout

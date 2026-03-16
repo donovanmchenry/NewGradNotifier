@@ -1,0 +1,42 @@
+[
+  {
+    "company_name": "Notion",
+    "platform": "ashby",
+    "identifier": "notion",
+    "careers_url": "https://www.notion.so/careers",
+    "priority_tier": 1,
+    "enabled": true
+  },
+  {
+    "company_name": "Palantir",
+    "platform": "lever",
+    "identifier": "palantir",
+    "careers_url": "https://www.palantir.com/careers/",
+    "priority_tier": 1,
+    "enabled": true
+  },
+  {
+    "company_name": "Figma",
+    "platform": "greenhouse",
+    "identifier": "figma",
+    "careers_url": "https://www.figma.com/careers/#job-openings",
+    "priority_tier": 1,
+    "enabled": true
+  },
+  {
+    "company_name": "Plaid",
+    "platform": "lever",
+    "identifier": "plaid",
+    "careers_url": "https://plaid.com/careers/openings/",
+    "priority_tier": 1,
+    "enabled": true
+  },
+  {
+    "company_name": "OpenAI",
+    "platform": "ashby",
+    "identifier": "openai",
+    "careers_url": "https://openai.com/careers/search",
+    "priority_tier": 1,
+    "enabled": true
+  }
+]

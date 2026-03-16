@@ -7,6 +7,8 @@ from newgrad_notifier.collectors.base import Collector
 from newgrad_notifier.collectors.company_pages.collector import CompanyPagesCollector
 from newgrad_notifier.collectors.simplify import SimplifyCollector
 from newgrad_notifier.collectors.web_search.collector import WebSearchCollector
+from newgrad_notifier.config.company_loader import load_default_ats_boards
+from newgrad_notifier.config.settings import ATSBoardConfig
 from newgrad_notifier.config.settings import AppSettings
 
 
@@ -14,8 +16,13 @@ def build_collectors(settings: AppSettings) -> list[Collector]:
     """Instantiate the enabled collectors for the current settings."""
 
     collectors: list[Collector] = []
-    if settings.sources.ats_enabled and settings.ats_boards:
-        collectors.append(ATSCollectorService(settings.ats_boards))
+    enabled_ats_boards = [board for board in settings.ats_boards if board.enabled]
+    if settings.sources.ats_enabled:
+        boards = enabled_ats_boards
+        if not boards:
+            boards = [ATSBoardConfig.model_validate(board) for board in load_default_ats_boards()]
+        if boards:
+            collectors.append(ATSCollectorService(boards))
     if settings.sources.simplify_enabled and settings.structured_feeds:
         collectors.append(SimplifyCollector(settings.structured_feeds))
     if settings.sources.company_pages_enabled:

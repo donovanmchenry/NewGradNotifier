@@ -8,7 +8,7 @@ from pathlib import Path
 from newgrad_notifier.collectors.base import CollectorContext
 from newgrad_notifier.collectors.factory import build_collectors
 from newgrad_notifier.config.settings import AppSettings, load_settings
-from newgrad_notifier.contracts import DigestStats, PipelineError, RankedJob
+from newgrad_notifier.contracts import DigestStats, PipelineError, RankedJob, SourceType
 from newgrad_notifier.db.repository import Repository
 from newgrad_notifier.db.seeding import seed_reference_data
 from newgrad_notifier.db.session import create_session_factory, init_db
@@ -61,7 +61,6 @@ def run_pipeline_once(config_path: str | None = None) -> None:
                 try:
                     collector_jobs = collector.collect(context)
                     collected_jobs.extend(collector_jobs)
-                    stats.source_counts[collector.name] = len(collector_jobs)
                 except Exception as exc:  # pragma: no cover - network/source failures
                     logger.exception("Collector failed", extra={"context": {"collector": collector.name}})
                     errors.append(
@@ -73,6 +72,13 @@ def run_pipeline_once(config_path: str | None = None) -> None:
                         )
                     )
             stats.total_collected = len(collected_jobs)
+            stats.source_counts = {
+                source_type.value: sum(1 for job in collected_jobs if job.source_type == source_type)
+                for source_type in SourceType
+                if any(job.source_type == source_type for job in collected_jobs)
+            }
+            if stats.source_counts:
+                stats.source_counts = dict(sorted(stats.source_counts.items()))
 
             normalized_jobs = []
             raw_job_ids: dict[str, int] = {}

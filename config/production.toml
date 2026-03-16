@@ -33,6 +33,11 @@ timezone = "America/New_York"
 immediate_alerts_enabled = true
 immediate_alert_threshold = 92
 
+[thresholds]
+digest_min_fit = 65
+top_priority_fit = 78
+high_signal_fit = 65
+
 [filters]
 remote_preference = "mixed"
 allowed_locations = ["United States", "Remote"]
