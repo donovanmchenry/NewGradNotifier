@@ -42,6 +42,7 @@ high_signal_fit = 65
 
 [collection]
 max_jobs_per_source = 250
+max_company_pages_per_run = 75
 min_domain_interval_seconds = 1.0
 request_timeout_seconds = 20
 cache_ttl_seconds = 21600

@@ -1,7 +1,11 @@
 from newgrad_notifier.collectors.parsers import extract_jobs_from_html
 from newgrad_notifier.collectors.company_pages.collector import CompanyPagesCollector
+from newgrad_notifier.collectors.base import CollectorContext
 from newgrad_notifier.config.settings import load_settings
 from newgrad_notifier.contracts import SourceType
+from newgrad_notifier.utils.http import CachedHttpClient
+
+import logging
 
 
 def test_company_page_parser_skips_anchor_fallback_without_structured_job_data():
@@ -86,3 +90,27 @@ def test_company_page_collector_discovers_ats_boards_from_html():
     assert len(boards) == 1
     assert boards[0].platform == "ashby"
     assert boards[0].identifier == "notion"
+
+
+def test_company_page_collector_prioritizes_and_caps_company_scan_list(tmp_path):
+    settings = load_settings("config/local_dev.toml")
+    settings.collection.max_company_pages_per_run = 2
+    settings.filters.priority_companies = ["Beta"]
+    collector = CompanyPagesCollector()
+    context = CollectorContext(
+        settings=settings,
+        http_client=CachedHttpClient(cache_dir=tmp_path / "cache"),
+        logger=logging.getLogger(__name__),
+    )
+
+    companies = [
+        {"name": "Gamma", "priority_tier": 3, "enabled": True},
+        {"name": "Alpha", "priority_tier": 1, "enabled": True},
+        {"name": "Beta", "priority_tier": 3, "enabled": True},
+        {"name": "Disabled", "priority_tier": 1, "enabled": False},
+    ]
+
+    prioritized = collector._prioritized_companies(companies, context)
+
+    assert [company["name"] for company in prioritized] == ["Beta", "Alpha"]
+    context.http_client.close()

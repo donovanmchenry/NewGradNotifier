@@ -38,6 +38,9 @@ digest_min_fit = 65
 top_priority_fit = 78
 high_signal_fit = 65
 
+[collection]
+max_company_pages_per_run = 75
+
 [filters]
 remote_preference = "mixed"
 allowed_locations = ["United States", "Remote"]

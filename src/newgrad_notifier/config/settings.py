@@ -61,6 +61,7 @@ class ThresholdSettings(BaseModel):
 
 class CollectionSettings(BaseModel):
     max_jobs_per_source: int = 250
+    max_company_pages_per_run: int = 75
     min_domain_interval_seconds: float = 1.0
     request_timeout_seconds: int = 20
     cache_ttl_seconds: int = 60 * 60 * 6

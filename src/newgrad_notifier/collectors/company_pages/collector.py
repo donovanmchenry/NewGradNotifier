@@ -38,6 +38,19 @@ class CompanyPagesCollector(Collector):
             "smartrecruiters": SmartRecruitersCollector(),
         }
 
+    @staticmethod
+    def _prioritized_companies(companies: list[dict[str, object]], context: CollectorContext) -> list[dict[str, object]]:
+        priority_names = {name.lower() for name in context.settings.filters.priority_companies}
+        prioritized = sorted(
+            (company for company in companies if company.get("enabled", True)),
+            key=lambda company: (
+                str(company.get("name", "")).lower() not in priority_names,
+                int(company.get("priority_tier", 3)),
+                str(company.get("name", "")).lower(),
+            ),
+        )
+        return prioritized[: context.settings.collection.max_company_pages_per_run]
+
     def _discover_ats_boards(self, company: dict[str, object], html: str, source_url: str) -> list[ATSBoardConfig]:
         discovered: list[ATSBoardConfig] = []
         seen: set[tuple[str, str]] = set()
@@ -91,10 +104,8 @@ class CompanyPagesCollector(Collector):
 
     def collect(self, context: CollectorContext) -> list[CollectedJob]:
         jobs: list[CollectedJob] = []
-        companies = load_company_list(self.company_list_path)
+        companies = self._prioritized_companies(load_company_list(self.company_list_path), context)
         for company in companies:
-            if not company.get("enabled", True):
-                continue
             source_url = company.get("careers_url") or urljoin(company["homepage"], "/careers")
             try:
                 html = context.http_client.get_text(
