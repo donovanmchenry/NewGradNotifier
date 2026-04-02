@@ -132,9 +132,9 @@ def render_daily_digest(
           body {{
             margin: 0;
             padding: 0;
-            background: #f3efe7;
-            color: #1d1d1d;
-            font-family: Georgia, "Times New Roman", serif;
+            background: #0a0a0a;
+            color: #fafafa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
           }}
           .shell {{
             max-width: 760px;
@@ -142,21 +142,25 @@ def render_daily_digest(
             padding: 32px 20px 48px;
           }}
           .hero {{
-            background: linear-gradient(135deg, #112d4e 0%, #1b4965 65%, #4f6d7a 100%);
-            color: #f7f4ed;
+            background: linear-gradient(180deg, #111111 0%, #171717 100%);
+            color: #fafafa;
             padding: 28px;
-            border-radius: 20px;
-            box-shadow: 0 12px 30px rgba(17, 45, 78, 0.18);
+            border-radius: 18px;
+            border: 1px solid #27272a;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
           }}
           .hero h1 {{
             margin: 0 0 10px;
             font-size: 30px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
             line-height: 1.1;
           }}
           .hero p {{
             margin: 8px 0 0;
-            font-size: 16px;
+            font-size: 15px;
             line-height: 1.5;
+            color: #a1a1aa;
           }}
           .stats {{
             display: grid;
@@ -165,30 +169,38 @@ def render_daily_digest(
             margin: 20px 0 0;
           }}
           .stat {{
-            background: rgba(255, 255, 255, 0.12);
+            background: #18181b;
+            border: 1px solid #27272a;
             border-radius: 14px;
             padding: 14px 16px;
           }}
           .stat strong {{
             display: block;
             font-size: 24px;
+            color: #fafafa;
             margin-bottom: 4px;
+          }}
+          .stat span {{
+            color: #a1a1aa;
+            font-size: 13px;
           }}
           .section {{
             margin-top: 26px;
           }}
           .section h2 {{
-            font-size: 21px;
+            font-size: 18px;
             margin: 0 0 14px;
-            color: #112d4e;
+            color: #fafafa;
+            font-weight: 600;
+            letter-spacing: -0.02em;
           }}
           .job-card {{
-            background: #fffdf9;
-            border: 1px solid #e4dacb;
-            border-radius: 18px;
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 16px;
             padding: 18px 18px 14px;
             margin-bottom: 14px;
-            box-shadow: 0 10px 24px rgba(43, 52, 69, 0.06);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
           }}
           .job-card__header {{
             display: flex;
@@ -198,30 +210,34 @@ def render_daily_digest(
           }}
           .job-card h3 {{
             margin: 4px 0 0;
-            font-size: 22px;
+            font-size: 20px;
+            color: #fafafa;
+            font-weight: 600;
+            letter-spacing: -0.02em;
             line-height: 1.2;
           }}
           .eyebrow {{
             margin: 0;
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            font-size: 12px;
-            color: #7c5c3b;
+            font-size: 11px;
+            color: #a1a1aa;
           }}
           .score-pill {{
             min-width: 48px;
             height: 48px;
-            border-radius: 999px;
-            background: #d9ead3;
-            color: #204e2a;
+            border-radius: 12px;
+            background: #111111;
+            border: 1px solid #3f3f46;
+            color: #fafafa;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            font-weight: 700;
             font-size: 18px;
           }}
           .meta, .subtle {{
-            color: #4d4d4d;
+            color: #a1a1aa;
             font-size: 14px;
             line-height: 1.5;
           }}
@@ -229,24 +245,37 @@ def render_daily_digest(
             font-size: 15px;
             line-height: 1.6;
             margin: 12px 0;
+            color: #d4d4d8;
           }}
           .empty {{
-            background: #fffdf9;
-            border: 1px dashed #d3c4af;
+            background: #18181b;
+            border: 1px dashed #3f3f46;
             border-radius: 14px;
             padding: 16px;
-            color: #6b6255;
+            color: #a1a1aa;
           }}
           .footer-card {{
-            background: #fffdf9;
-            border-radius: 18px;
+            background: #18181b;
+            border-radius: 16px;
             padding: 18px;
-            border: 1px solid #e4dacb;
+            border: 1px solid #27272a;
+            color: #d4d4d8;
+          }}
+          ul {{
+            margin: 0;
+            padding-left: 18px;
+          }}
+          li {{
+            margin: 0 0 8px;
+            color: #d4d4d8;
           }}
           a {{
-            color: #0c5f78;
+            color: #fafafa;
             text-decoration: none;
             font-weight: 600;
+          }}
+          a:hover {{
+            text-decoration: underline;
           }}
         </style>
       </head>

@@ -61,12 +61,20 @@ class SimplifyCollector(Collector):
     ) -> list[CollectedJob]:
         jobs: list[CollectedJob] = []
         for row in rows:
+            # Skip stale/inactive listings when the feed provides these flags
+            if row.get("active") is False or row.get("is_visible") is False:
+                continue
             title = str(row.get(feed.title_key, "")).strip()
             description = str(row.get(feed.description_key, "")).strip()
-            location = str(row.get(feed.location_key, "")).strip() or None
+            source_context = f"{feed.name} {feed.url}"
+            raw_location = row.get(feed.location_key, "")
+            if isinstance(raw_location, list):
+                location = ", ".join(str(l) for l in raw_location) or None
+            else:
+                location = str(raw_location).strip() or None
             if not title or not row.get(feed.company_key) or not row.get(feed.url_key):
                 continue
-            if not is_relevant_role(title, description, context.settings):
+            if not is_relevant_role(title, description, context.settings, source_context=source_context):
                 continue
             if not location_allowed(location, context.settings):
                 continue
@@ -86,4 +94,3 @@ class SimplifyCollector(Collector):
                 )
             )
         return jobs
-

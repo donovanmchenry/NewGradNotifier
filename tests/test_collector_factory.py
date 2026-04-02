@@ -12,4 +12,7 @@ def test_factory_uses_curated_ats_boards_when_no_enabled_boards_are_configured(m
     collectors = build_collectors(settings)
 
     assert collectors
-    assert collectors[0].name == "ats"
+    ats_collectors = [collector for collector in collectors if collector.name == "ats"]
+
+    assert ats_collectors
+    assert any(board.company_name == "Groq" for board in ats_collectors[0].boards)

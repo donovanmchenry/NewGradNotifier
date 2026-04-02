@@ -82,6 +82,19 @@ keywords = [
   "full stack engineer",
 ]
 
+[[structured_feeds]]
+name = "simplify_new_grad"
+url = "https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/.github/scripts/listings.json"
+format = "json"
+job_path = ""
+company_key = "company_name"
+title_key = "title"
+url_key = "url"
+location_key = "locations"
+posted_at_key = "date_posted"
+description_key = ""
+job_id_key = "id"
+
 [company_coverage]
 list_path = ""
 

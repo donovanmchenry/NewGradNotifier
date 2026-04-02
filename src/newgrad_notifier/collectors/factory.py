@@ -17,14 +17,14 @@ def build_collectors(settings: AppSettings) -> list[Collector]:
 
     collectors: list[Collector] = []
     enabled_ats_boards = [board for board in settings.ats_boards if board.enabled]
+    if settings.sources.simplify_enabled and settings.structured_feeds:
+        collectors.append(SimplifyCollector(settings.structured_feeds))
     if settings.sources.ats_enabled:
         boards = enabled_ats_boards
         if not boards:
             boards = [ATSBoardConfig.model_validate(board) for board in load_default_ats_boards()]
         if boards:
             collectors.append(ATSCollectorService(boards))
-    if settings.sources.simplify_enabled and settings.structured_feeds:
-        collectors.append(SimplifyCollector(settings.structured_feeds))
     if settings.sources.company_pages_enabled:
         collectors.append(CompanyPagesCollector(settings.company_coverage.list_path or None))
     if settings.sources.web_search_enabled:

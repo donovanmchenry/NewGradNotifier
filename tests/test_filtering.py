@@ -14,4 +14,21 @@ def test_filtering_rejects_internships_and_non_us_roles():
     assert location_allowed("Toronto, ON, Canada", settings) is False
     assert location_allowed("Remote - Canada", settings) is False
     assert location_allowed("Seattle, WA", settings) is True
+    assert location_allowed("SF", settings) is True
+    assert location_allowed("LA", settings) is True
     assert location_allowed("Remote, United States", settings) is True
+
+
+def test_structured_new_grad_source_context_allows_generic_swe_titles():
+    settings = load_settings("config/local_dev.toml")
+
+    assert is_relevant_role("Software Engineer", "", settings) is False
+    assert (
+        is_relevant_role(
+            "Software Engineer",
+            "",
+            settings,
+            source_context="simplify_new_grad https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/.github/scripts/listings.json",
+        )
+        is True
+    )

@@ -133,6 +133,11 @@ US_LOCATION_HINTS = (
     "us-only",
     "u.s.-only",
 )
+US_METRO_SHORTHANDS = (
+    "sf",
+    "nyc",
+    "la",
+)
 US_STATE_NAMES = (
     "alabama",
     "alaska",
@@ -203,9 +208,15 @@ def _contains_any(text: str, hints: tuple[str, ...]) -> bool:
     return any(hint in text for hint in hints)
 
 
+def _normalize_hint_text(text: str) -> str:
+    return text.lower().replace("-", " ").replace("_", " ").strip()
+
+
 def _has_us_signal(location_text: str) -> bool:
-    lowered = location_text.lower()
+    lowered = _normalize_hint_text(location_text)
     if _contains_any(lowered, US_LOCATION_HINTS) or _contains_any(lowered, US_STATE_NAMES):
+        return True
+    if lowered in US_METRO_SHORTHANDS:
         return True
     state_match = US_STATE_PATTERN.search(location_text)
     return bool(state_match and state_match.group(1) in US_STATE_ABBREVIATIONS)
@@ -215,11 +226,12 @@ def _has_non_us_signal(location_text: str) -> bool:
     return _contains_any(location_text.lower(), NON_US_LOCATION_HINTS)
 
 
-def is_relevant_role(title: str, description: str, settings: AppSettings) -> bool:
+def is_relevant_role(title: str, description: str, settings: AppSettings, source_context: str = "") -> bool:
     """Return True when the role resembles an entry-level SWE role."""
 
     title_lower = title.lower()
     haystack = f"{title} {description}".lower()
+    source_context_lower = _normalize_hint_text(source_context)
     if _contains_any(haystack, EXCLUSION_HINTS):
         return False
     if _contains_any(title_lower, SENIORITY_EXCLUSION_HINTS):
@@ -244,7 +256,10 @@ def is_relevant_role(title: str, description: str, settings: AppSettings) -> boo
             haystack,
         )
     )
-    return role_match_in_title and (early_career_match or entry_title_match or entry_description_match)
+    source_implies_early_career = _contains_any(source_context_lower, EARLY_CAREER_HINTS)
+    return role_match_in_title and (
+        early_career_match or entry_title_match or entry_description_match or source_implies_early_career
+    )
 
 
 def location_allowed(location_text: str | None, settings: AppSettings) -> bool:

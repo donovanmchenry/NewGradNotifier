@@ -1,109 +1,2067 @@
 [
-  {"slug": "apple", "name": "Apple", "homepage": "https://www.apple.com", "careers_url": "https://jobs.apple.com/en-us/search", "priority_tier": 1},
-  {"slug": "google", "name": "Google", "homepage": "https://about.google", "careers_url": "https://www.google.com/about/careers/applications/jobs/results/", "priority_tier": 1},
-  {"slug": "microsoft", "name": "Microsoft", "homepage": "https://www.microsoft.com", "careers_url": "https://jobs.careers.microsoft.com/global/en/search", "priority_tier": 1},
-  {"slug": "amazon", "name": "Amazon", "homepage": "https://www.amazon.jobs", "careers_url": "https://www.amazon.jobs/en/", "priority_tier": 1},
-  {"slug": "meta", "name": "Meta", "homepage": "https://about.meta.com", "careers_url": "https://www.metacareers.com/jobs/", "priority_tier": 1},
-  {"slug": "nvidia", "name": "NVIDIA", "homepage": "https://www.nvidia.com", "careers_url": "https://www.nvidia.com/en-us/about-nvidia/careers/", "priority_tier": 1},
-  {"slug": "netflix", "name": "Netflix", "homepage": "https://about.netflix.com", "careers_url": "https://jobs.netflix.com/", "priority_tier": 1},
-  {"slug": "adobe", "name": "Adobe", "homepage": "https://www.adobe.com", "careers_url": "https://careers.adobe.com/us/en/search-results", "priority_tier": 1},
-  {"slug": "salesforce", "name": "Salesforce", "homepage": "https://www.salesforce.com", "careers_url": "https://careers.salesforce.com/en/jobs/", "priority_tier": 1},
-  {"slug": "oracle", "name": "Oracle", "homepage": "https://www.oracle.com", "careers_url": "https://careers.oracle.com/jobs/", "priority_tier": 2},
-  {"slug": "cisco", "name": "Cisco", "homepage": "https://www.cisco.com", "careers_url": "https://jobs.cisco.com/jobs/SearchJobs/", "priority_tier": 2},
-  {"slug": "ibm", "name": "IBM", "homepage": "https://www.ibm.com", "careers_url": "https://www.ibm.com/careers/search", "priority_tier": 2},
-  {"slug": "intel", "name": "Intel", "homepage": "https://www.intel.com", "careers_url": "https://jobs.intel.com/en/search-jobs", "priority_tier": 2},
-  {"slug": "amd", "name": "AMD", "homepage": "https://www.amd.com", "careers_url": "https://careers.amd.com/careers-home/jobs", "priority_tier": 2},
-  {"slug": "qualcomm", "name": "Qualcomm", "homepage": "https://www.qualcomm.com", "careers_url": "https://careers.qualcomm.com/careers", "priority_tier": 2},
-  {"slug": "servicenow", "name": "ServiceNow", "homepage": "https://www.servicenow.com", "careers_url": "https://careers.servicenow.com/jobs/", "priority_tier": 2},
-  {"slug": "datadog", "name": "Datadog", "homepage": "https://www.datadoghq.com", "careers_url": "https://careers.datadoghq.com/all-jobs/", "priority_tier": 1},
-  {"slug": "snowflake", "name": "Snowflake", "homepage": "https://www.snowflake.com", "careers_url": "https://careers.snowflake.com/us/en/search-results", "priority_tier": 1},
-  {"slug": "databricks", "name": "Databricks", "homepage": "https://www.databricks.com", "careers_url": "https://www.databricks.com/company/careers/open-positions", "priority_tier": 1},
-  {"slug": "confluent", "name": "Confluent", "homepage": "https://www.confluent.io", "careers_url": "https://careers.confluent.io/", "priority_tier": 2},
-  {"slug": "mongodb", "name": "MongoDB", "homepage": "https://www.mongodb.com", "careers_url": "https://www.mongodb.com/company/careers", "priority_tier": 2},
-  {"slug": "elastic", "name": "Elastic", "homepage": "https://www.elastic.co", "careers_url": "https://www.elastic.co/careers", "priority_tier": 2},
-  {"slug": "atlassian", "name": "Atlassian", "homepage": "https://www.atlassian.com", "careers_url": "https://www.atlassian.com/company/careers/all-jobs", "priority_tier": 1},
-  {"slug": "github", "name": "GitHub", "homepage": "https://github.com", "careers_url": "https://www.github.careers/careers-home", "priority_tier": 2},
-  {"slug": "gitlab", "name": "GitLab", "homepage": "https://about.gitlab.com", "careers_url": "https://about.gitlab.com/jobs/", "priority_tier": 2},
-  {"slug": "shopify", "name": "Shopify", "homepage": "https://www.shopify.com", "careers_url": "https://www.shopify.com/careers", "priority_tier": 1},
-  {"slug": "stripe", "name": "Stripe", "homepage": "https://stripe.com", "careers_url": "https://stripe.com/jobs/search", "priority_tier": 1},
-  {"slug": "airbnb", "name": "Airbnb", "homepage": "https://www.airbnb.com", "careers_url": "https://careers.airbnb.com/positions/", "priority_tier": 1},
-  {"slug": "uber", "name": "Uber", "homepage": "https://www.uber.com", "careers_url": "https://www.uber.com/us/en/careers/list/", "priority_tier": 1},
-  {"slug": "lyft", "name": "Lyft", "homepage": "https://www.lyft.com", "careers_url": "https://www.lyft.com/careers", "priority_tier": 2},
-  {"slug": "dropbox", "name": "Dropbox", "homepage": "https://www.dropbox.com", "careers_url": "https://jobs.dropbox.com/all-jobs", "priority_tier": 2},
-  {"slug": "cloudflare", "name": "Cloudflare", "homepage": "https://www.cloudflare.com", "careers_url": "https://www.cloudflare.com/careers/jobs/", "priority_tier": 1},
-  {"slug": "twilio", "name": "Twilio", "homepage": "https://www.twilio.com", "careers_url": "https://www.twilio.com/company/jobs", "priority_tier": 2},
-  {"slug": "okta", "name": "Okta", "homepage": "https://www.okta.com", "careers_url": "https://www.okta.com/company/careers/", "priority_tier": 2},
-  {"slug": "hubspot", "name": "HubSpot", "homepage": "https://www.hubspot.com", "careers_url": "https://www.hubspot.com/careers/jobs", "priority_tier": 2},
-  {"slug": "asana", "name": "Asana", "homepage": "https://asana.com", "careers_url": "https://asana.com/jobs/all", "priority_tier": 2},
-  {"slug": "zoom", "name": "Zoom", "homepage": "https://www.zoom.com", "careers_url": "https://careers.zoom.us/jobs/search", "priority_tier": 2},
-  {"slug": "figma", "name": "Figma", "homepage": "https://www.figma.com", "careers_url": "https://www.figma.com/careers/#job-openings", "priority_tier": 1},
-  {"slug": "notion", "name": "Notion", "homepage": "https://www.notion.so", "careers_url": "https://www.notion.so/careers", "priority_tier": 1},
-  {"slug": "plaid", "name": "Plaid", "homepage": "https://plaid.com", "careers_url": "https://plaid.com/careers/openings/", "priority_tier": 1},
-  {"slug": "coinbase", "name": "Coinbase", "homepage": "https://www.coinbase.com", "careers_url": "https://www.coinbase.com/careers/positions/", "priority_tier": 2},
-  {"slug": "robinhood", "name": "Robinhood", "homepage": "https://robinhood.com", "careers_url": "https://careers.robinhood.com/openings/", "priority_tier": 2},
-  {"slug": "block", "name": "Block", "homepage": "https://block.xyz", "careers_url": "https://block.xyz/careers", "priority_tier": 2},
-  {"slug": "linkedin", "name": "LinkedIn", "homepage": "https://www.linkedin.com", "careers_url": "https://careers.linkedin.com/jobs", "priority_tier": 1},
-  {"slug": "reddit", "name": "Reddit", "homepage": "https://www.redditinc.com", "careers_url": "https://www.redditinc.com/careers", "priority_tier": 2},
-  {"slug": "pinterest", "name": "Pinterest", "homepage": "https://www.pinterestcareers.com", "careers_url": "https://www.pinterestcareers.com/jobs/", "priority_tier": 2},
-  {"slug": "snap", "name": "Snap", "homepage": "https://snap.com", "careers_url": "https://careers.snap.com/jobs", "priority_tier": 2},
-  {"slug": "doordash", "name": "DoorDash", "homepage": "https://www.doordash.com", "careers_url": "https://careersatdoordash.com/", "priority_tier": 2},
-  {"slug": "instacart", "name": "Instacart", "homepage": "https://www.instacart.com", "careers_url": "https://instacart.careers/current-openings/", "priority_tier": 2},
-  {"slug": "expedia-group", "name": "Expedia Group", "homepage": "https://www.expediagroup.com", "careers_url": "https://careers.expediagroup.com/jobs/", "priority_tier": 2},
-  {"slug": "zillow", "name": "Zillow", "homepage": "https://www.zillow.com", "careers_url": "https://www.zillowgroup.com/careers/open-positions/", "priority_tier": 2},
-  {"slug": "wayfair", "name": "Wayfair", "homepage": "https://www.wayfair.com", "careers_url": "https://www.wayfair.com/careers/jobs", "priority_tier": 2},
-  {"slug": "duolingo", "name": "Duolingo", "homepage": "https://www.duolingo.com", "careers_url": "https://careers.duolingo.com/", "priority_tier": 2},
-  {"slug": "discord", "name": "Discord", "homepage": "https://discord.com", "careers_url": "https://discord.com/jobs", "priority_tier": 1},
-  {"slug": "roblox", "name": "Roblox", "homepage": "https://corp.roblox.com", "careers_url": "https://careers.roblox.com/jobs", "priority_tier": 2},
-  {"slug": "spotify", "name": "Spotify", "homepage": "https://www.spotify.com", "careers_url": "https://www.lifeatspotify.com/jobs", "priority_tier": 2},
-  {"slug": "unity", "name": "Unity", "homepage": "https://unity.com", "careers_url": "https://unity.com/careers/positions", "priority_tier": 2},
-  {"slug": "riot-games", "name": "Riot Games", "homepage": "https://www.riotgames.com", "careers_url": "https://www.riotgames.com/en/work-with-us/jobs", "priority_tier": 2},
-  {"slug": "electronic-arts", "name": "Electronic Arts", "homepage": "https://www.ea.com", "careers_url": "https://www.ea.com/careers/careers-overview/worldwide-studios", "priority_tier": 2},
-  {"slug": "epic-games", "name": "Epic Games", "homepage": "https://www.epicgames.com", "careers_url": "https://www.epicgames.com/site/en-US/careers/jobs", "priority_tier": 2},
-  {"slug": "intuit", "name": "Intuit", "homepage": "https://www.intuit.com", "careers_url": "https://www.intuit.com/careers/jobs/", "priority_tier": 2},
-  {"slug": "docusign", "name": "DocuSign", "homepage": "https://www.docusign.com", "careers_url": "https://www.docusign.com/company/careers/open", "priority_tier": 2},
-  {"slug": "vercel", "name": "Vercel", "homepage": "https://vercel.com", "careers_url": "https://vercel.com/careers", "priority_tier": 1},
-  {"slug": "hashicorp", "name": "HashiCorp", "homepage": "https://www.hashicorp.com", "careers_url": "https://www.hashicorp.com/en/careers", "priority_tier": 2},
-  {"slug": "digitalocean", "name": "DigitalOcean", "homepage": "https://www.digitalocean.com", "careers_url": "https://www.digitalocean.com/careers", "priority_tier": 2},
-  {"slug": "akamai", "name": "Akamai", "homepage": "https://www.akamai.com", "careers_url": "https://www.akamai.com/careers", "priority_tier": 2},
-  {"slug": "fastly", "name": "Fastly", "homepage": "https://www.fastly.com", "careers_url": "https://www.fastly.com/about/jobs", "priority_tier": 2},
-  {"slug": "box", "name": "Box", "homepage": "https://www.box.com", "careers_url": "https://careers.box.com/jobs", "priority_tier": 2},
-  {"slug": "pagerduty", "name": "PagerDuty", "homepage": "https://www.pagerduty.com", "careers_url": "https://www.pagerduty.com/careers/open-positions/", "priority_tier": 2},
-  {"slug": "new-relic", "name": "New Relic", "homepage": "https://newrelic.com", "careers_url": "https://newrelic.com/careers/open-positions", "priority_tier": 2},
-  {"slug": "splunk", "name": "Splunk", "homepage": "https://www.splunk.com", "careers_url": "https://www.splunk.com/en_us/careers/search-jobs.html", "priority_tier": 2},
-  {"slug": "crowdstrike", "name": "CrowdStrike", "homepage": "https://www.crowdstrike.com", "careers_url": "https://www.crowdstrike.com/careers/", "priority_tier": 2},
-  {"slug": "palo-alto-networks", "name": "Palo Alto Networks", "homepage": "https://www.paloaltonetworks.com", "careers_url": "https://jobs.paloaltonetworks.com/en/search-jobs", "priority_tier": 2},
-  {"slug": "zscaler", "name": "Zscaler", "homepage": "https://www.zscaler.com", "careers_url": "https://www.zscaler.com/careers", "priority_tier": 2},
-  {"slug": "samsara", "name": "Samsara", "homepage": "https://www.samsara.com", "careers_url": "https://www.samsara.com/company/careers/open-roles", "priority_tier": 2},
-  {"slug": "toast", "name": "Toast", "homepage": "https://pos.toasttab.com", "careers_url": "https://careers.toasttab.com/jobs", "priority_tier": 2},
-  {"slug": "affirm", "name": "Affirm", "homepage": "https://www.affirm.com", "careers_url": "https://careers.affirm.com/careers", "priority_tier": 2},
-  {"slug": "sofi", "name": "SoFi", "homepage": "https://www.sofi.com", "careers_url": "https://www.sofi.com/careers/", "priority_tier": 2},
-  {"slug": "chime", "name": "Chime", "homepage": "https://www.chime.com", "careers_url": "https://www.chime.com/careers/", "priority_tier": 2},
-  {"slug": "rippling", "name": "Rippling", "homepage": "https://www.rippling.com", "careers_url": "https://www.rippling.com/careers", "priority_tier": 2},
-  {"slug": "gusto", "name": "Gusto", "homepage": "https://gusto.com", "careers_url": "https://gusto.com/about/careers", "priority_tier": 2},
-  {"slug": "checkr", "name": "Checkr", "homepage": "https://checkr.com", "careers_url": "https://checkr.com/company/careers", "priority_tier": 2},
-  {"slug": "brex", "name": "Brex", "homepage": "https://www.brex.com", "careers_url": "https://www.brex.com/careers", "priority_tier": 2},
-  {"slug": "ramp", "name": "Ramp", "homepage": "https://ramp.com", "careers_url": "https://ramp.com/careers", "priority_tier": 2},
-  {"slug": "canva", "name": "Canva", "homepage": "https://www.canva.com", "careers_url": "https://www.canva.com/careers/", "priority_tier": 2},
-  {"slug": "miro", "name": "Miro", "homepage": "https://miro.com", "careers_url": "https://miro.com/careers/open-positions/", "priority_tier": 2},
-  {"slug": "qualtrics", "name": "Qualtrics", "homepage": "https://www.qualtrics.com", "careers_url": "https://www.qualtrics.com/careers/us/en/search-results", "priority_tier": 2},
-  {"slug": "openai", "name": "OpenAI", "homepage": "https://openai.com", "careers_url": "https://openai.com/careers/search", "priority_tier": 1},
-  {"slug": "anthropic", "name": "Anthropic", "homepage": "https://www.anthropic.com", "careers_url": "https://www.anthropic.com/careers", "priority_tier": 1},
-  {"slug": "palantir", "name": "Palantir", "homepage": "https://www.palantir.com", "careers_url": "https://www.palantir.com/careers/", "priority_tier": 1},
-  {"slug": "slack", "name": "Slack", "homepage": "https://slack.com", "careers_url": "https://slack.com/careers", "priority_tier": 2},
-  {"slug": "etsy", "name": "Etsy", "homepage": "https://www.etsy.com", "careers_url": "https://careers.etsy.com/global/en/search-results", "priority_tier": 2},
-  {"slug": "ebay", "name": "eBay", "homepage": "https://www.ebay.com", "careers_url": "https://jobs.ebayinc.com/us/en/search-results", "priority_tier": 2},
-  {"slug": "booking-com", "name": "Booking.com", "homepage": "https://www.booking.com", "careers_url": "https://careers.booking.com/jobs/", "priority_tier": 2},
-  {"slug": "mercado-libre", "name": "Mercado Libre", "homepage": "https://www.mercadolibre.com", "careers_url": "https://careers-meli.mercadolibre.com/", "priority_tier": 2},
-  {"slug": "indeed", "name": "Indeed", "homepage": "https://www.indeed.com", "careers_url": "https://careers.indeed.com/", "priority_tier": 2},
-  {"slug": "yahoo", "name": "Yahoo", "homepage": "https://www.yahoo.com", "careers_url": "https://www.yahooinc.com/careers", "priority_tier": 2},
-  {"slug": "tesla", "name": "Tesla", "homepage": "https://www.tesla.com", "careers_url": "https://www.tesla.com/careers/search", "priority_tier": 1},
-  {"slug": "bytedance", "name": "ByteDance", "homepage": "https://www.bytedance.com", "careers_url": "https://jobs.bytedance.com/en", "priority_tier": 2},
-  {"slug": "hewlett-packard-enterprise", "name": "Hewlett Packard Enterprise", "homepage": "https://www.hpe.com", "careers_url": "https://careers.hpe.com/us/en/search-results", "priority_tier": 2},
-  {"slug": "capital-one", "name": "Capital One", "homepage": "https://www.capitalone.com", "careers_url": "https://www.capitalonecareers.com/search-jobs", "priority_tier": 1},
-  {"slug": "jpmorgan-chase", "name": "JPMorgan Chase", "homepage": "https://www.jpmorganchase.com", "careers_url": "https://careers.jpmorgan.com/us/en/students/programs/software-engineer-program-fulltime", "priority_tier": 2},
-  {"slug": "bloomberg", "name": "Bloomberg", "homepage": "https://www.bloomberg.com", "careers_url": "https://www.bloomberg.com/company/careers/search/", "priority_tier": 1},
-  {"slug": "walmart-global-tech", "name": "Walmart Global Tech", "homepage": "https://tech.walmart.com", "careers_url": "https://careers.walmart.com/technology", "priority_tier": 2},
-  {"slug": "disney", "name": "Disney", "homepage": "https://thewaltdisneycompany.com", "careers_url": "https://jobs.disneycareers.com/", "priority_tier": 2},
-  {"slug": "comcast", "name": "Comcast", "homepage": "https://corporate.comcast.com", "careers_url": "https://jobs.comcast.com/search-jobs", "priority_tier": 2},
-  {"slug": "verizon", "name": "Verizon", "homepage": "https://www.verizon.com", "careers_url": "https://mycareer.verizon.com/jobs", "priority_tier": 2}
+  {
+    "slug": "apple",
+    "name": "Apple",
+    "homepage": "https://www.apple.com",
+    "careers_url": "https://jobs.apple.com/en-us/search",
+    "priority_tier": 1
+  },
+  {
+    "slug": "google",
+    "name": "Google",
+    "homepage": "https://about.google",
+    "careers_url": "https://www.google.com/about/careers/applications/jobs/results/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "microsoft",
+    "name": "Microsoft",
+    "homepage": "https://www.microsoft.com",
+    "careers_url": "https://jobs.careers.microsoft.com/global/en/search",
+    "priority_tier": 2
+  },
+  {
+    "slug": "amazon",
+    "name": "Amazon",
+    "homepage": "https://www.amazon.jobs",
+    "careers_url": "https://www.amazon.jobs/en/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "meta",
+    "name": "Meta",
+    "homepage": "https://about.meta.com",
+    "careers_url": "https://www.metacareers.com/jobs/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "nvidia",
+    "name": "NVIDIA",
+    "homepage": "https://www.nvidia.com",
+    "careers_url": "https://www.nvidia.com/en-us/about-nvidia/careers/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "netflix",
+    "name": "Netflix",
+    "homepage": "https://about.netflix.com",
+    "careers_url": "https://jobs.netflix.com/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "adobe",
+    "name": "Adobe",
+    "homepage": "https://www.adobe.com",
+    "careers_url": "https://careers.adobe.com/us/en/search-results",
+    "priority_tier": 2
+  },
+  {
+    "slug": "salesforce",
+    "name": "Salesforce",
+    "homepage": "https://www.salesforce.com",
+    "careers_url": "https://careers.salesforce.com/en/jobs/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "oracle",
+    "name": "Oracle",
+    "homepage": "https://www.oracle.com",
+    "careers_url": "https://careers.oracle.com/jobs/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "cisco",
+    "name": "Cisco",
+    "homepage": "https://www.cisco.com",
+    "careers_url": "https://jobs.cisco.com/jobs/SearchJobs/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "ibm",
+    "name": "IBM",
+    "homepage": "https://www.ibm.com",
+    "careers_url": "https://www.ibm.com/careers/search",
+    "priority_tier": 2
+  },
+  {
+    "slug": "intel",
+    "name": "Intel",
+    "homepage": "https://www.intel.com",
+    "careers_url": "https://jobs.intel.com/en/search-jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "amd",
+    "name": "AMD",
+    "homepage": "https://www.amd.com",
+    "careers_url": "https://careers.amd.com/careers-home/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "qualcomm",
+    "name": "Qualcomm",
+    "homepage": "https://www.qualcomm.com",
+    "careers_url": "https://careers.qualcomm.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "servicenow",
+    "name": "ServiceNow",
+    "homepage": "https://www.servicenow.com",
+    "careers_url": "https://careers.servicenow.com/jobs/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "datadog",
+    "name": "Datadog",
+    "homepage": "https://www.datadoghq.com",
+    "careers_url": "https://careers.datadoghq.com/all-jobs/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "snowflake",
+    "name": "Snowflake",
+    "homepage": "https://www.snowflake.com",
+    "careers_url": "https://careers.snowflake.com/us/en/search-results",
+    "priority_tier": 1
+  },
+  {
+    "slug": "databricks",
+    "name": "Databricks",
+    "homepage": "https://www.databricks.com",
+    "careers_url": "https://www.databricks.com/company/careers/open-positions",
+    "priority_tier": 1
+  },
+  {
+    "slug": "confluent",
+    "name": "Confluent",
+    "homepage": "https://www.confluent.io",
+    "careers_url": "https://careers.confluent.io/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "mongodb",
+    "name": "MongoDB",
+    "homepage": "https://www.mongodb.com",
+    "careers_url": "https://www.mongodb.com/company/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "elastic",
+    "name": "Elastic",
+    "homepage": "https://www.elastic.co",
+    "careers_url": "https://www.elastic.co/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "atlassian",
+    "name": "Atlassian",
+    "homepage": "https://www.atlassian.com",
+    "careers_url": "https://www.atlassian.com/company/careers/all-jobs",
+    "priority_tier": 1
+  },
+  {
+    "slug": "github",
+    "name": "GitHub",
+    "homepage": "https://github.com",
+    "careers_url": "https://www.github.careers/careers-home",
+    "priority_tier": 2
+  },
+  {
+    "slug": "gitlab",
+    "name": "GitLab",
+    "homepage": "https://about.gitlab.com",
+    "careers_url": "https://about.gitlab.com/jobs/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "shopify",
+    "name": "Shopify",
+    "homepage": "https://www.shopify.com",
+    "careers_url": "https://www.shopify.com/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "stripe",
+    "name": "Stripe",
+    "homepage": "https://stripe.com",
+    "careers_url": "https://stripe.com/jobs/search",
+    "priority_tier": 1
+  },
+  {
+    "slug": "airbnb",
+    "name": "Airbnb",
+    "homepage": "https://www.airbnb.com",
+    "careers_url": "https://careers.airbnb.com/positions/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "uber",
+    "name": "Uber",
+    "homepage": "https://www.uber.com",
+    "careers_url": "https://www.uber.com/us/en/careers/list/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "lyft",
+    "name": "Lyft",
+    "homepage": "https://www.lyft.com",
+    "careers_url": "https://www.lyft.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "dropbox",
+    "name": "Dropbox",
+    "homepage": "https://www.dropbox.com",
+    "careers_url": "https://jobs.dropbox.com/all-jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "cloudflare",
+    "name": "Cloudflare",
+    "homepage": "https://www.cloudflare.com",
+    "careers_url": "https://www.cloudflare.com/careers/jobs/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "twilio",
+    "name": "Twilio",
+    "homepage": "https://www.twilio.com",
+    "careers_url": "https://www.twilio.com/company/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "okta",
+    "name": "Okta",
+    "homepage": "https://www.okta.com",
+    "careers_url": "https://www.okta.com/company/careers/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "hubspot",
+    "name": "HubSpot",
+    "homepage": "https://www.hubspot.com",
+    "careers_url": "https://www.hubspot.com/careers/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "asana",
+    "name": "Asana",
+    "homepage": "https://asana.com",
+    "careers_url": "https://asana.com/jobs/all",
+    "priority_tier": 2
+  },
+  {
+    "slug": "zoom",
+    "name": "Zoom",
+    "homepage": "https://www.zoom.com",
+    "careers_url": "https://careers.zoom.us/jobs/search",
+    "priority_tier": 2
+  },
+  {
+    "slug": "figma",
+    "name": "Figma",
+    "homepage": "https://www.figma.com",
+    "careers_url": "https://www.figma.com/careers/#job-openings",
+    "priority_tier": 1
+  },
+  {
+    "slug": "notion",
+    "name": "Notion",
+    "homepage": "https://www.notion.so",
+    "careers_url": "https://www.notion.so/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "plaid",
+    "name": "Plaid",
+    "homepage": "https://plaid.com",
+    "careers_url": "https://plaid.com/careers/openings/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "coinbase",
+    "name": "Coinbase",
+    "homepage": "https://www.coinbase.com",
+    "careers_url": "https://www.coinbase.com/careers/positions/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "robinhood",
+    "name": "Robinhood",
+    "homepage": "https://robinhood.com",
+    "careers_url": "https://careers.robinhood.com/openings/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "block",
+    "name": "Block",
+    "homepage": "https://block.xyz",
+    "careers_url": "https://block.xyz/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "linkedin",
+    "name": "LinkedIn",
+    "homepage": "https://www.linkedin.com",
+    "careers_url": "https://careers.linkedin.com/jobs",
+    "priority_tier": 1
+  },
+  {
+    "slug": "reddit",
+    "name": "Reddit",
+    "homepage": "https://www.redditinc.com",
+    "careers_url": "https://www.redditinc.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "pinterest",
+    "name": "Pinterest",
+    "homepage": "https://www.pinterestcareers.com",
+    "careers_url": "https://www.pinterestcareers.com/jobs/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "snap",
+    "name": "Snap",
+    "homepage": "https://snap.com",
+    "careers_url": "https://careers.snap.com/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "doordash",
+    "name": "DoorDash",
+    "homepage": "https://www.doordash.com",
+    "careers_url": "https://careersatdoordash.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "instacart",
+    "name": "Instacart",
+    "homepage": "https://www.instacart.com",
+    "careers_url": "https://instacart.careers/current-openings/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "expedia-group",
+    "name": "Expedia Group",
+    "homepage": "https://www.expediagroup.com",
+    "careers_url": "https://careers.expediagroup.com/jobs/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "zillow",
+    "name": "Zillow",
+    "homepage": "https://www.zillow.com",
+    "careers_url": "https://www.zillowgroup.com/careers/open-positions/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "wayfair",
+    "name": "Wayfair",
+    "homepage": "https://www.wayfair.com",
+    "careers_url": "https://www.wayfair.com/careers/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "duolingo",
+    "name": "Duolingo",
+    "homepage": "https://www.duolingo.com",
+    "careers_url": "https://careers.duolingo.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "discord",
+    "name": "Discord",
+    "homepage": "https://discord.com",
+    "careers_url": "https://discord.com/jobs",
+    "priority_tier": 1
+  },
+  {
+    "slug": "roblox",
+    "name": "Roblox",
+    "homepage": "https://corp.roblox.com",
+    "careers_url": "https://careers.roblox.com/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "spotify",
+    "name": "Spotify",
+    "homepage": "https://www.spotify.com",
+    "careers_url": "https://www.lifeatspotify.com/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "unity",
+    "name": "Unity",
+    "homepage": "https://unity.com",
+    "careers_url": "https://unity.com/careers/positions",
+    "priority_tier": 2
+  },
+  {
+    "slug": "riot-games",
+    "name": "Riot Games",
+    "homepage": "https://www.riotgames.com",
+    "careers_url": "https://www.riotgames.com/en/work-with-us/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "electronic-arts",
+    "name": "Electronic Arts",
+    "homepage": "https://www.ea.com",
+    "careers_url": "https://www.ea.com/careers/careers-overview/worldwide-studios",
+    "priority_tier": 2
+  },
+  {
+    "slug": "epic-games",
+    "name": "Epic Games",
+    "homepage": "https://www.epicgames.com",
+    "careers_url": "https://www.epicgames.com/site/en-US/careers/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "intuit",
+    "name": "Intuit",
+    "homepage": "https://www.intuit.com",
+    "careers_url": "https://www.intuit.com/careers/jobs/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "docusign",
+    "name": "DocuSign",
+    "homepage": "https://www.docusign.com",
+    "careers_url": "https://www.docusign.com/company/careers/open",
+    "priority_tier": 2
+  },
+  {
+    "slug": "vercel",
+    "name": "Vercel",
+    "homepage": "https://vercel.com",
+    "careers_url": "https://vercel.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "hashicorp",
+    "name": "HashiCorp",
+    "homepage": "https://www.hashicorp.com",
+    "careers_url": "https://www.hashicorp.com/en/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "digitalocean",
+    "name": "DigitalOcean",
+    "homepage": "https://www.digitalocean.com",
+    "careers_url": "https://www.digitalocean.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "akamai",
+    "name": "Akamai",
+    "homepage": "https://www.akamai.com",
+    "careers_url": "https://www.akamai.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "fastly",
+    "name": "Fastly",
+    "homepage": "https://www.fastly.com",
+    "careers_url": "https://www.fastly.com/about/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "box",
+    "name": "Box",
+    "homepage": "https://www.box.com",
+    "careers_url": "https://careers.box.com/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "pagerduty",
+    "name": "PagerDuty",
+    "homepage": "https://www.pagerduty.com",
+    "careers_url": "https://www.pagerduty.com/careers/open-positions/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "new-relic",
+    "name": "New Relic",
+    "homepage": "https://newrelic.com",
+    "careers_url": "https://newrelic.com/careers/open-positions",
+    "priority_tier": 2
+  },
+  {
+    "slug": "splunk",
+    "name": "Splunk",
+    "homepage": "https://www.splunk.com",
+    "careers_url": "https://www.splunk.com/en_us/careers/search-jobs.html",
+    "priority_tier": 2
+  },
+  {
+    "slug": "crowdstrike",
+    "name": "CrowdStrike",
+    "homepage": "https://www.crowdstrike.com",
+    "careers_url": "https://www.crowdstrike.com/careers/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "palo-alto-networks",
+    "name": "Palo Alto Networks",
+    "homepage": "https://www.paloaltonetworks.com",
+    "careers_url": "https://jobs.paloaltonetworks.com/en/search-jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "zscaler",
+    "name": "Zscaler",
+    "homepage": "https://www.zscaler.com",
+    "careers_url": "https://www.zscaler.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "samsara",
+    "name": "Samsara",
+    "homepage": "https://www.samsara.com",
+    "careers_url": "https://www.samsara.com/company/careers/open-roles",
+    "priority_tier": 2
+  },
+  {
+    "slug": "toast",
+    "name": "Toast",
+    "homepage": "https://pos.toasttab.com",
+    "careers_url": "https://careers.toasttab.com/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "affirm",
+    "name": "Affirm",
+    "homepage": "https://www.affirm.com",
+    "careers_url": "https://careers.affirm.com/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "sofi",
+    "name": "SoFi",
+    "homepage": "https://www.sofi.com",
+    "careers_url": "https://www.sofi.com/careers/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "chime",
+    "name": "Chime",
+    "homepage": "https://www.chime.com",
+    "careers_url": "https://www.chime.com/careers/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "rippling",
+    "name": "Rippling",
+    "homepage": "https://www.rippling.com",
+    "careers_url": "https://www.rippling.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "gusto",
+    "name": "Gusto",
+    "homepage": "https://gusto.com",
+    "careers_url": "https://gusto.com/about/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "checkr",
+    "name": "Checkr",
+    "homepage": "https://checkr.com",
+    "careers_url": "https://checkr.com/company/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "brex",
+    "name": "Brex",
+    "homepage": "https://www.brex.com",
+    "careers_url": "https://www.brex.com/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "ramp",
+    "name": "Ramp",
+    "homepage": "https://ramp.com",
+    "careers_url": "https://ramp.com/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "canva",
+    "name": "Canva",
+    "homepage": "https://www.canva.com",
+    "careers_url": "https://www.canva.com/careers/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "miro",
+    "name": "Miro",
+    "homepage": "https://miro.com",
+    "careers_url": "https://miro.com/careers/open-positions/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "qualtrics",
+    "name": "Qualtrics",
+    "homepage": "https://www.qualtrics.com",
+    "careers_url": "https://www.qualtrics.com/careers/us/en/search-results",
+    "priority_tier": 2
+  },
+  {
+    "slug": "openai",
+    "name": "OpenAI",
+    "homepage": "https://openai.com",
+    "careers_url": "https://openai.com/careers/search",
+    "priority_tier": 1
+  },
+  {
+    "slug": "anthropic",
+    "name": "Anthropic",
+    "homepage": "https://www.anthropic.com",
+    "careers_url": "https://www.anthropic.com/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "palantir",
+    "name": "Palantir",
+    "homepage": "https://www.palantir.com",
+    "careers_url": "https://www.palantir.com/careers/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "slack",
+    "name": "Slack",
+    "homepage": "https://slack.com",
+    "careers_url": "https://slack.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "etsy",
+    "name": "Etsy",
+    "homepage": "https://www.etsy.com",
+    "careers_url": "https://careers.etsy.com/global/en/search-results",
+    "priority_tier": 2
+  },
+  {
+    "slug": "ebay",
+    "name": "eBay",
+    "homepage": "https://www.ebay.com",
+    "careers_url": "https://jobs.ebayinc.com/us/en/search-results",
+    "priority_tier": 2
+  },
+  {
+    "slug": "booking-com",
+    "name": "Booking.com",
+    "homepage": "https://www.booking.com",
+    "careers_url": "https://careers.booking.com/jobs/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "mercado-libre",
+    "name": "Mercado Libre",
+    "homepage": "https://www.mercadolibre.com",
+    "careers_url": "https://careers-meli.mercadolibre.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "indeed",
+    "name": "Indeed",
+    "homepage": "https://www.indeed.com",
+    "careers_url": "https://careers.indeed.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "yahoo",
+    "name": "Yahoo",
+    "homepage": "https://www.yahoo.com",
+    "careers_url": "https://www.yahooinc.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "tesla",
+    "name": "Tesla",
+    "homepage": "https://www.tesla.com",
+    "careers_url": "https://www.tesla.com/careers/search",
+    "priority_tier": 2
+  },
+  {
+    "slug": "bytedance",
+    "name": "ByteDance",
+    "homepage": "https://www.bytedance.com",
+    "careers_url": "https://jobs.bytedance.com/en",
+    "priority_tier": 2
+  },
+  {
+    "slug": "hewlett-packard-enterprise",
+    "name": "Hewlett Packard Enterprise",
+    "homepage": "https://www.hpe.com",
+    "careers_url": "https://careers.hpe.com/us/en/search-results",
+    "priority_tier": 2
+  },
+  {
+    "slug": "capital-one",
+    "name": "Capital One",
+    "homepage": "https://www.capitalone.com",
+    "careers_url": "https://www.capitalonecareers.com/search-jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "jpmorgan-chase",
+    "name": "JPMorgan Chase",
+    "homepage": "https://www.jpmorganchase.com",
+    "careers_url": "https://careers.jpmorgan.com/us/en/students/programs/software-engineer-program-fulltime",
+    "priority_tier": 2
+  },
+  {
+    "slug": "bloomberg",
+    "name": "Bloomberg",
+    "homepage": "https://www.bloomberg.com",
+    "careers_url": "https://www.bloomberg.com/company/careers/search/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "walmart-global-tech",
+    "name": "Walmart Global Tech",
+    "homepage": "https://tech.walmart.com",
+    "careers_url": "https://careers.walmart.com/technology",
+    "priority_tier": 2
+  },
+  {
+    "slug": "disney",
+    "name": "Disney",
+    "homepage": "https://thewaltdisneycompany.com",
+    "careers_url": "https://jobs.disneycareers.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "comcast",
+    "name": "Comcast",
+    "homepage": "https://corporate.comcast.com",
+    "careers_url": "https://jobs.comcast.com/search-jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "verizon",
+    "name": "Verizon",
+    "homepage": "https://www.verizon.com",
+    "careers_url": "https://mycareer.verizon.com/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "scale-ai",
+    "name": "Scale AI",
+    "homepage": "https://scale.com",
+    "careers_url": "https://scale.com/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "anduril",
+    "name": "Anduril Industries",
+    "homepage": "https://www.anduril.com",
+    "careers_url": "https://www.anduril.com/careers/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "waymo",
+    "name": "Waymo",
+    "homepage": "https://waymo.com",
+    "careers_url": "https://waymo.com/careers/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "spacex",
+    "name": "SpaceX",
+    "homepage": "https://www.spacex.com",
+    "careers_url": "https://www.spacex.com/careers/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "rivian",
+    "name": "Rivian",
+    "homepage": "https://rivian.com",
+    "careers_url": "https://rivian.com/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "coreweave",
+    "name": "CoreWeave",
+    "homepage": "https://www.coreweave.com",
+    "careers_url": "https://www.coreweave.com/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "aurora",
+    "name": "Aurora Innovation",
+    "homepage": "https://aurora.tech",
+    "careers_url": "https://aurora.tech/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "cohere",
+    "name": "Cohere",
+    "homepage": "https://cohere.com",
+    "careers_url": "https://cohere.com/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "weights-and-biases",
+    "name": "Weights & Biases",
+    "homepage": "https://wandb.ai",
+    "careers_url": "https://wandb.ai/site/company/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "hugging-face",
+    "name": "Hugging Face",
+    "homepage": "https://huggingface.co",
+    "careers_url": "https://apply.workable.com/huggingface/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "grammarly",
+    "name": "Grammarly",
+    "homepage": "https://www.grammarly.com",
+    "careers_url": "https://www.grammarly.com/jobs",
+    "priority_tier": 1
+  },
+  {
+    "slug": "replit",
+    "name": "Replit",
+    "homepage": "https://replit.com",
+    "careers_url": "https://replit.com/site/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "cursor",
+    "name": "Cursor (Anysphere)",
+    "homepage": "https://www.cursor.com",
+    "careers_url": "https://www.cursor.com/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "mistral",
+    "name": "Mistral AI",
+    "homepage": "https://mistral.ai",
+    "careers_url": "https://mistral.ai/en/careers/",
+    "priority_tier": 1
+  },
+  {
+    "slug": "xai",
+    "name": "xAI",
+    "homepage": "https://x.ai",
+    "careers_url": "https://x.ai/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "goldman-sachs",
+    "name": "Goldman Sachs",
+    "homepage": "https://www.goldmansachs.com",
+    "careers_url": "https://www.goldmansachs.com/careers/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "morgan-stanley",
+    "name": "Morgan Stanley",
+    "homepage": "https://www.morganstanley.com",
+    "careers_url": "https://www.morganstanley.com/careers/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "citigroup",
+    "name": "Citigroup",
+    "homepage": "https://www.citigroup.com",
+    "careers_url": "https://jobs.citi.com/search-jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "bank-of-america",
+    "name": "Bank of America",
+    "homepage": "https://www.bankofamerica.com",
+    "careers_url": "https://careers.bankofamerica.com/en-us/students-and-graduates/programs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "wells-fargo",
+    "name": "Wells Fargo",
+    "homepage": "https://www.wellsfargo.com",
+    "careers_url": "https://www.wellsfargo.com/about/careers/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "american-express",
+    "name": "American Express",
+    "homepage": "https://www.americanexpress.com",
+    "careers_url": "https://aexp.eightfold.ai/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "visa",
+    "name": "Visa",
+    "homepage": "https://usa.visa.com",
+    "careers_url": "https://corporate.visa.com/en/jobs/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "mastercard",
+    "name": "Mastercard",
+    "homepage": "https://www.mastercard.com",
+    "careers_url": "https://careers.mastercard.com/us/en/search-results",
+    "priority_tier": 2
+  },
+  {
+    "slug": "paypal",
+    "name": "PayPal",
+    "homepage": "https://www.paypal.com",
+    "careers_url": "https://careers.pypl.com/home/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "fidelity",
+    "name": "Fidelity Investments",
+    "homepage": "https://www.fidelity.com",
+    "careers_url": "https://jobs.fidelity.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "charles-schwab",
+    "name": "Charles Schwab",
+    "homepage": "https://www.schwab.com",
+    "careers_url": "https://www.schwab.com/about-schwab/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "blackrock",
+    "name": "BlackRock",
+    "homepage": "https://www.blackrock.com",
+    "careers_url": "https://careers.blackrock.com/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "lockheed-martin",
+    "name": "Lockheed Martin",
+    "homepage": "https://www.lockheedmartin.com",
+    "careers_url": "https://www.lockheedmartin.com/en-us/careers.html",
+    "priority_tier": 3
+  },
+  {
+    "slug": "rtx",
+    "name": "RTX",
+    "homepage": "https://www.rtx.com",
+    "careers_url": "https://careers.rtx.com/global/en/search-results",
+    "priority_tier": 3
+  },
+  {
+    "slug": "northrop-grumman",
+    "name": "Northrop Grumman",
+    "homepage": "https://www.northropgrumman.com",
+    "careers_url": "https://www.northropgrumman.com/careers/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "general-dynamics",
+    "name": "General Dynamics",
+    "homepage": "https://www.gd.com",
+    "careers_url": "https://careers.gd.com/search-jobs",
+    "priority_tier": 3
+  },
+  {
+    "slug": "boeing",
+    "name": "Boeing",
+    "homepage": "https://www.boeing.com",
+    "careers_url": "https://jobs.boeing.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "l3harris",
+    "name": "L3Harris",
+    "homepage": "https://www.l3harris.com",
+    "careers_url": "https://careers.l3harris.com/search-jobs",
+    "priority_tier": 3
+  },
+  {
+    "slug": "leidos",
+    "name": "Leidos",
+    "homepage": "https://www.leidos.com",
+    "careers_url": "https://careers.leidos.com/jobs",
+    "priority_tier": 3
+  },
+  {
+    "slug": "saic",
+    "name": "SAIC",
+    "homepage": "https://www.saic.com",
+    "careers_url": "https://www.saic.com/careers/search-jobs",
+    "priority_tier": 3
+  },
+  {
+    "slug": "booz-allen",
+    "name": "Booz Allen Hamilton",
+    "homepage": "https://www.boozallen.com",
+    "careers_url": "https://careers.boozallen.com/jobs/SearchJobs/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "accenture",
+    "name": "Accenture",
+    "homepage": "https://www.accenture.com",
+    "careers_url": "https://www.accenture.com/us-en/careers/jobsearch",
+    "priority_tier": 3
+  },
+  {
+    "slug": "deloitte",
+    "name": "Deloitte",
+    "homepage": "https://www.deloitte.com",
+    "careers_url": "https://apply.deloitte.com/careers/SearchJobs/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "att",
+    "name": "AT&T",
+    "homepage": "https://www.att.com",
+    "careers_url": "https://www.att.jobs/search-jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "t-mobile",
+    "name": "T-Mobile",
+    "homepage": "https://www.t-mobile.com",
+    "careers_url": "https://careers.t-mobile.com/search-jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "target",
+    "name": "Target",
+    "homepage": "https://corporate.target.com",
+    "careers_url": "https://corporate.target.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "home-depot",
+    "name": "Home Depot",
+    "homepage": "https://www.homedepot.com",
+    "careers_url": "https://careers.homedepot.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "best-buy",
+    "name": "Best Buy",
+    "homepage": "https://www.bestbuy.com",
+    "careers_url": "https://jobs.bestbuy.com/bby/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "general-motors",
+    "name": "General Motors",
+    "homepage": "https://www.gm.com",
+    "careers_url": "https://careers.gm.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "ford",
+    "name": "Ford",
+    "homepage": "https://www.ford.com",
+    "careers_url": "https://fordcareers.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "broadcom",
+    "name": "Broadcom",
+    "homepage": "https://www.broadcom.com",
+    "careers_url": "https://careers.broadcom.com/careers/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "texas-instruments",
+    "name": "Texas Instruments",
+    "homepage": "https://www.ti.com",
+    "careers_url": "https://careers.ti.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "micron",
+    "name": "Micron",
+    "homepage": "https://www.micron.com",
+    "careers_url": "https://careers.micron.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "western-digital",
+    "name": "Western Digital",
+    "homepage": "https://www.westerndigital.com",
+    "careers_url": "https://jobs.westerndigital.com/en",
+    "priority_tier": 2
+  },
+  {
+    "slug": "marvell",
+    "name": "Marvell",
+    "homepage": "https://www.marvell.com",
+    "careers_url": "https://www.marvell.com/company/careers.html",
+    "priority_tier": 2
+  },
+  {
+    "slug": "arista-networks",
+    "name": "Arista Networks",
+    "homepage": "https://www.arista.com",
+    "careers_url": "https://www.arista.com/en/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "pure-storage",
+    "name": "Pure Storage",
+    "homepage": "https://www.purestorage.com",
+    "careers_url": "https://www.purestorage.com/company/careers.html",
+    "priority_tier": 2
+  },
+  {
+    "slug": "nutanix",
+    "name": "Nutanix",
+    "homepage": "https://www.nutanix.com",
+    "careers_url": "https://www.nutanix.com/company/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "netapp",
+    "name": "NetApp",
+    "homepage": "https://www.netapp.com",
+    "careers_url": "https://www.netapp.com/company/careers/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "juniper-networks",
+    "name": "Juniper Networks",
+    "homepage": "https://www.juniper.net",
+    "careers_url": "https://www.juniper.net/us/en/company/careers.html",
+    "priority_tier": 2
+  },
+  {
+    "slug": "dell",
+    "name": "Dell Technologies",
+    "homepage": "https://www.dell.com",
+    "careers_url": "https://jobs.dell.com/en/search-jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "hp-inc",
+    "name": "HP Inc.",
+    "homepage": "https://www.hp.com",
+    "careers_url": "https://jobs.hp.com/en-us/search-jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "workday",
+    "name": "Workday",
+    "homepage": "https://www.workday.com",
+    "careers_url": "https://www.workday.com/en-us/company/careers.html",
+    "priority_tier": 2
+  },
+  {
+    "slug": "sap",
+    "name": "SAP",
+    "homepage": "https://www.sap.com",
+    "careers_url": "https://jobs.sap.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "activision-blizzard",
+    "name": "Activision Blizzard",
+    "homepage": "https://www.activisionblizzard.com",
+    "careers_url": "https://careers.activisionblizzard.com/global/en/search-results",
+    "priority_tier": 2
+  },
+  {
+    "slug": "take-two",
+    "name": "Take-Two Interactive",
+    "homepage": "https://www.take2games.com",
+    "careers_url": "https://careers.take2games.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "unitedhealth-group",
+    "name": "UnitedHealth Group",
+    "homepage": "https://www.unitedhealthgroup.com",
+    "careers_url": "https://careers.unitedhealthgroup.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "cvs-health",
+    "name": "CVS Health",
+    "homepage": "https://www.cvshealth.com",
+    "careers_url": "https://jobs.cvshealth.com/us/en/search-results",
+    "priority_tier": 3
+  },
+  {
+    "slug": "elevance-health",
+    "name": "Elevance Health",
+    "homepage": "https://www.elevancehealth.com",
+    "careers_url": "https://careers.elevancehealth.com/jobs",
+    "priority_tier": 3
+  },
+  {
+    "slug": "cigna-group",
+    "name": "Cigna Group",
+    "homepage": "https://www.cigna.com",
+    "careers_url": "https://jobs.cigna.com/us/en/search-results",
+    "priority_tier": 3
+  },
+  {
+    "slug": "humana",
+    "name": "Humana",
+    "homepage": "https://www.humana.com",
+    "careers_url": "https://careers.humana.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "centene",
+    "name": "Centene",
+    "homepage": "https://www.centene.com",
+    "careers_url": "https://jobs.centene.com/us/en/search-results",
+    "priority_tier": 3
+  },
+  {
+    "slug": "hca-healthcare",
+    "name": "HCA Healthcare",
+    "homepage": "https://hcahealthcare.com",
+    "careers_url": "https://careers.hcahealthcare.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "molina-healthcare",
+    "name": "Molina Healthcare",
+    "homepage": "https://www.molinahealthcare.com",
+    "careers_url": "https://careers.molinahealthcare.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "johnson-johnson",
+    "name": "Johnson & Johnson",
+    "homepage": "https://www.jnj.com",
+    "careers_url": "https://jobs.jnj.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "pfizer",
+    "name": "Pfizer",
+    "homepage": "https://www.pfizer.com",
+    "careers_url": "https://www.pfizer.com/about/careers/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "merck",
+    "name": "Merck",
+    "homepage": "https://www.merck.com",
+    "careers_url": "https://jobs.merck.com/us/en",
+    "priority_tier": 3
+  },
+  {
+    "slug": "abbvie",
+    "name": "AbbVie",
+    "homepage": "https://www.abbvie.com",
+    "careers_url": "https://careers.abbvie.com/jobs",
+    "priority_tier": 3
+  },
+  {
+    "slug": "eli-lilly",
+    "name": "Eli Lilly",
+    "homepage": "https://www.lilly.com",
+    "careers_url": "https://careers.lilly.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "amgen",
+    "name": "Amgen",
+    "homepage": "https://www.amgen.com",
+    "careers_url": "https://careers.amgen.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "gilead-sciences",
+    "name": "Gilead Sciences",
+    "homepage": "https://www.gilead.com",
+    "careers_url": "https://www.gilead.com/careers",
+    "priority_tier": 3
+  },
+  {
+    "slug": "thermo-fisher-scientific",
+    "name": "Thermo Fisher Scientific",
+    "homepage": "https://www.thermofisher.com",
+    "careers_url": "https://jobs.thermofisher.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "abbott-labs",
+    "name": "Abbott Laboratories",
+    "homepage": "https://www.abbott.com",
+    "careers_url": "https://www.jobs.abbott/us/en",
+    "priority_tier": 3
+  },
+  {
+    "slug": "stryker",
+    "name": "Stryker",
+    "homepage": "https://www.stryker.com",
+    "careers_url": "https://careers.stryker.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "bristol-myers-squibb",
+    "name": "Bristol-Myers Squibb",
+    "homepage": "https://www.bms.com",
+    "careers_url": "https://careers.bms.com/jobs",
+    "priority_tier": 3
+  },
+  {
+    "slug": "becton-dickinson",
+    "name": "Becton Dickinson",
+    "homepage": "https://www.bd.com",
+    "careers_url": "https://jobs.bd.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "ge-healthcare",
+    "name": "GE HealthCare",
+    "homepage": "https://www.gehealthcare.com",
+    "careers_url": "https://careers.gehealthcare.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "state-farm",
+    "name": "State Farm",
+    "homepage": "https://www.statefarm.com",
+    "careers_url": "https://www.statefarm.com/careers",
+    "priority_tier": 3
+  },
+  {
+    "slug": "progressive",
+    "name": "Progressive",
+    "homepage": "https://www.progressive.com",
+    "careers_url": "https://www.progressive.com/careers/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "allstate",
+    "name": "Allstate",
+    "homepage": "https://www.allstate.com",
+    "careers_url": "https://careers.allstate.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "liberty-mutual",
+    "name": "Liberty Mutual",
+    "homepage": "https://www.libertymutual.com",
+    "careers_url": "https://careers.libertymutualgroup.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "usaa",
+    "name": "USAA",
+    "homepage": "https://www.usaa.com",
+    "careers_url": "https://www.usaa.com/inet/wc/careers",
+    "priority_tier": 3
+  },
+  {
+    "slug": "nationwide",
+    "name": "Nationwide",
+    "homepage": "https://www.nationwide.com",
+    "careers_url": "https://www.nationwide.com/about-us/careers/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "travelers",
+    "name": "Travelers",
+    "homepage": "https://www.travelers.com",
+    "careers_url": "https://careers.travelers.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "metlife",
+    "name": "MetLife",
+    "homepage": "https://www.metlife.com",
+    "careers_url": "https://jobs.metlife.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "prudential-financial",
+    "name": "Prudential Financial",
+    "homepage": "https://www.prudential.com",
+    "careers_url": "https://jobs.prudential.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "aig",
+    "name": "AIG",
+    "homepage": "https://www.aig.com",
+    "careers_url": "https://www.aig.com/careers",
+    "priority_tier": 3
+  },
+  {
+    "slug": "tiaa",
+    "name": "TIAA",
+    "homepage": "https://www.tiaa.org",
+    "careers_url": "https://www.tiaa.org/public/about-tiaa/careers",
+    "priority_tier": 3
+  },
+  {
+    "slug": "aflac",
+    "name": "Aflac",
+    "homepage": "https://www.aflac.com",
+    "careers_url": "https://www.aflac.com/careers.aspx",
+    "priority_tier": 3
+  },
+  {
+    "slug": "new-york-life",
+    "name": "New York Life",
+    "homepage": "https://www.newyorklife.com",
+    "careers_url": "https://www.newyorklife.com/careers/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "us-bancorp",
+    "name": "U.S. Bancorp",
+    "homepage": "https://www.usbank.com",
+    "careers_url": "https://careers.usbank.com/global/en/search-results",
+    "priority_tier": 3
+  },
+  {
+    "slug": "pnc-financial",
+    "name": "PNC Financial Services",
+    "homepage": "https://www.pnc.com",
+    "careers_url": "https://careers.pnc.com/global/en/search-results",
+    "priority_tier": 3
+  },
+  {
+    "slug": "truist-financial",
+    "name": "Truist Financial",
+    "homepage": "https://www.truist.com",
+    "careers_url": "https://careers.truist.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "bny-mellon",
+    "name": "BNY Mellon",
+    "homepage": "https://www.bnymellon.com",
+    "careers_url": "https://careers.bnymellon.com/global/en/search-results",
+    "priority_tier": 3
+  },
+  {
+    "slug": "synchrony-financial",
+    "name": "Synchrony Financial",
+    "homepage": "https://www.synchrony.com",
+    "careers_url": "https://www.synchronycareers.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "ally-financial",
+    "name": "Ally Financial",
+    "homepage": "https://www.ally.com",
+    "careers_url": "https://www.ally.com/about/careers/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "discover-financial",
+    "name": "Discover Financial",
+    "homepage": "https://www.discover.com",
+    "careers_url": "https://www.discover.com/company/careers/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "freddie-mac",
+    "name": "Freddie Mac",
+    "homepage": "https://www.freddiemac.com",
+    "careers_url": "https://careers.freddiemac.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "fannie-mae",
+    "name": "Fannie Mae",
+    "homepage": "https://www.fanniemae.com",
+    "careers_url": "https://www.fanniemae.com/careers",
+    "priority_tier": 3
+  },
+  {
+    "slug": "ameriprise-financial",
+    "name": "Ameriprise Financial",
+    "homepage": "https://www.ameriprise.com",
+    "careers_url": "https://careers.ameriprise.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "fiserv",
+    "name": "Fiserv",
+    "homepage": "https://www.fiserv.com",
+    "careers_url": "https://careers.fiserv.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "adp",
+    "name": "ADP",
+    "homepage": "https://www.adp.com",
+    "careers_url": "https://jobs.adp.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "broadridge",
+    "name": "Broadridge Financial Solutions",
+    "homepage": "https://www.broadridge.com",
+    "careers_url": "https://careers.broadridge.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "intercontinental-exchange",
+    "name": "Intercontinental Exchange",
+    "homepage": "https://www.theice.com",
+    "careers_url": "https://careers.ice.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "s-and-p-global",
+    "name": "S&P Global",
+    "homepage": "https://www.spglobal.com",
+    "careers_url": "https://careers.spglobal.com/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "cognizant",
+    "name": "Cognizant",
+    "homepage": "https://www.cognizant.com",
+    "careers_url": "https://careers.cognizant.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "dxc-technology",
+    "name": "DXC Technology",
+    "homepage": "https://www.dxc.technology",
+    "careers_url": "https://careers.dxc.com/global/en/search-results",
+    "priority_tier": 3
+  },
+  {
+    "slug": "kyndryl",
+    "name": "Kyndryl",
+    "homepage": "https://www.kyndryl.com",
+    "careers_url": "https://www.kyndryl.com/us/en/careers",
+    "priority_tier": 3
+  },
+  {
+    "slug": "cdw",
+    "name": "CDW",
+    "homepage": "https://www.cdw.com",
+    "careers_url": "https://www.cdw.com/content/cdw/en/about/careers.html",
+    "priority_tier": 2
+  },
+  {
+    "slug": "honeywell",
+    "name": "Honeywell",
+    "homepage": "https://www.honeywell.com",
+    "careers_url": "https://careers.honeywell.com/us/en/search-results",
+    "priority_tier": 3
+  },
+  {
+    "slug": "ge-aerospace",
+    "name": "GE Aerospace",
+    "homepage": "https://www.geaerospace.com",
+    "careers_url": "https://jobs.gecareers.com/aviation/global/en/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "caterpillar",
+    "name": "Caterpillar",
+    "homepage": "https://www.caterpillar.com",
+    "careers_url": "https://careers.caterpillar.com/en/jobs/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "deere",
+    "name": "Deere & Company",
+    "homepage": "https://www.deere.com",
+    "careers_url": "https://jobs.deere.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "3m",
+    "name": "3M",
+    "homepage": "https://www.3m.com",
+    "careers_url": "https://www.3m.com/3M/en_US/careers-us/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "emerson-electric",
+    "name": "Emerson Electric",
+    "homepage": "https://www.emerson.com",
+    "careers_url": "https://www.emerson.com/en-us/careers",
+    "priority_tier": 3
+  },
+  {
+    "slug": "danaher",
+    "name": "Danaher",
+    "homepage": "https://www.danaher.com",
+    "careers_url": "https://www.danaher.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "applied-materials",
+    "name": "Applied Materials",
+    "homepage": "https://www.appliedmaterials.com",
+    "careers_url": "https://www.amat.com/en/careers.html",
+    "priority_tier": 2
+  },
+  {
+    "slug": "lam-research",
+    "name": "Lam Research",
+    "homepage": "https://www.lamresearch.com",
+    "careers_url": "https://careers.lamresearch.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "motorola-solutions",
+    "name": "Motorola Solutions",
+    "homepage": "https://www.motorolasolutions.com",
+    "careers_url": "https://www.motorolasolutions.com/en_us/about/company-overview/careers.html",
+    "priority_tier": 2
+  },
+  {
+    "slug": "textron",
+    "name": "Textron",
+    "homepage": "https://www.textron.com",
+    "careers_url": "https://www.textron.com/en/careers",
+    "priority_tier": 3
+  },
+  {
+    "slug": "huntington-ingalls",
+    "name": "Huntington Ingalls Industries",
+    "homepage": "https://www.huntingtoningalls.com",
+    "careers_url": "https://careers.huntingtoningalls.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "ge-vernova",
+    "name": "GE Vernova",
+    "homepage": "https://www.gevernova.com",
+    "careers_url": "https://jobs.gecareers.com/vernova/global/en/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "fedex",
+    "name": "FedEx",
+    "homepage": "https://www.fedex.com",
+    "careers_url": "https://careers.fedex.com/fedex/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "ups",
+    "name": "UPS",
+    "homepage": "https://www.ups.com",
+    "careers_url": "https://www.jobs.ups.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "lowes",
+    "name": "Lowe's",
+    "homepage": "https://www.lowes.com",
+    "careers_url": "https://corporate.lowes.com/our-company/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "kroger",
+    "name": "Kroger",
+    "homepage": "https://www.kroger.com",
+    "careers_url": "https://jobs.kroger.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "costco",
+    "name": "Costco",
+    "homepage": "https://www.costco.com",
+    "careers_url": "https://www.costco.com/jobs-and-career-development.html",
+    "priority_tier": 3
+  },
+  {
+    "slug": "walgreens",
+    "name": "Walgreens",
+    "homepage": "https://www.walgreens.com",
+    "careers_url": "https://jobs.walgreens.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "nike",
+    "name": "Nike",
+    "homepage": "https://www.nike.com",
+    "careers_url": "https://jobs.nike.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "starbucks",
+    "name": "Starbucks",
+    "homepage": "https://www.starbucks.com",
+    "careers_url": "https://www.starbucks.com/careers/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "marriott",
+    "name": "Marriott International",
+    "homepage": "https://www.marriott.com",
+    "careers_url": "https://jobs.marriott.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "booking-holdings",
+    "name": "Booking Holdings",
+    "homepage": "https://www.bookingholdings.com",
+    "careers_url": "https://careers.bookingholdings.com/",
+    "priority_tier": 2
+  },
+  {
+    "slug": "procter-gamble",
+    "name": "Procter & Gamble",
+    "homepage": "https://www.pg.com",
+    "careers_url": "https://www.pgcareers.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "warner-bros-discovery",
+    "name": "Warner Bros. Discovery",
+    "homepage": "https://wbd.com",
+    "careers_url": "https://careers.wbd.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "charter-communications",
+    "name": "Charter Communications",
+    "homepage": "https://corporate.charter.com",
+    "careers_url": "https://jobs.spectrum.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "exxonmobil",
+    "name": "ExxonMobil",
+    "homepage": "https://www.exxonmobil.com",
+    "careers_url": "https://jobs.exxonmobil.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "chevron",
+    "name": "Chevron",
+    "homepage": "https://www.chevron.com",
+    "careers_url": "https://www.chevron.com/careers/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "jacobs-solutions",
+    "name": "Jacobs Solutions",
+    "homepage": "https://www.jacobs.com",
+    "careers_url": "https://careers.jacobs.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "cbre-group",
+    "name": "CBRE Group",
+    "homepage": "https://www.cbre.com",
+    "careers_url": "https://careers.cbre.com/",
+    "priority_tier": 3
+  },
+  {
+    "slug": "perplexity",
+    "name": "Perplexity",
+    "homepage": "https://www.perplexity.ai",
+    "careers_url": "https://www.perplexity.ai/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "character-ai",
+    "name": "Character.AI",
+    "homepage": "https://character.ai",
+    "careers_url": "https://character.ai/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "groq",
+    "name": "Groq",
+    "homepage": "https://groq.com",
+    "careers_url": "https://groq.com/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "together-ai",
+    "name": "Together AI",
+    "homepage": "https://www.together.ai",
+    "careers_url": "https://www.together.ai/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "inflection-ai",
+    "name": "Inflection AI",
+    "homepage": "https://inflection.ai",
+    "careers_url": "https://inflection.ai/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "elevenlabs",
+    "name": "ElevenLabs",
+    "homepage": "https://elevenlabs.io",
+    "careers_url": "https://elevenlabs.io/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "runway",
+    "name": "Runway",
+    "homepage": "https://runwayml.com",
+    "careers_url": "https://runwayml.com/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "wiz",
+    "name": "Wiz",
+    "homepage": "https://www.wiz.io",
+    "careers_url": "https://www.wiz.io/careers",
+    "priority_tier": 1
+  },
+  {
+    "slug": "sentinelone",
+    "name": "SentinelOne",
+    "homepage": "https://www.sentinelone.com",
+    "careers_url": "https://www.sentinelone.com/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "abnormal-security",
+    "name": "Abnormal Security",
+    "homepage": "https://abnormalsecurity.com",
+    "careers_url": "https://abnormalsecurity.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "airtable",
+    "name": "Airtable",
+    "homepage": "https://www.airtable.com",
+    "careers_url": "https://www.airtable.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "retool",
+    "name": "Retool",
+    "homepage": "https://retool.com",
+    "careers_url": "https://retool.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "braze",
+    "name": "Braze",
+    "homepage": "https://www.braze.com",
+    "careers_url": "https://www.braze.com/company/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "amplitude",
+    "name": "Amplitude",
+    "homepage": "https://amplitude.com",
+    "careers_url": "https://amplitude.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "gong",
+    "name": "Gong",
+    "homepage": "https://www.gong.io",
+    "careers_url": "https://www.gong.io/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "outreach",
+    "name": "Outreach",
+    "homepage": "https://www.outreach.io",
+    "careers_url": "https://www.outreach.io/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "intercom",
+    "name": "Intercom",
+    "homepage": "https://www.intercom.com",
+    "careers_url": "https://www.intercom.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "zendesk",
+    "name": "Zendesk",
+    "homepage": "https://www.zendesk.com",
+    "careers_url": "https://www.zendesk.com/company/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "freshworks",
+    "name": "Freshworks",
+    "homepage": "https://www.freshworks.com",
+    "careers_url": "https://www.freshworks.com/company/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "klaviyo",
+    "name": "Klaviyo",
+    "homepage": "https://www.klaviyo.com",
+    "careers_url": "https://www.klaviyo.com/careers/jobs",
+    "priority_tier": 2
+  },
+  {
+    "slug": "dbt-labs",
+    "name": "dbt Labs",
+    "homepage": "https://www.getdbt.com",
+    "careers_url": "https://www.getdbt.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "fivetran",
+    "name": "Fivetran",
+    "homepage": "https://www.fivetran.com",
+    "careers_url": "https://www.fivetran.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "airbyte",
+    "name": "Airbyte",
+    "homepage": "https://airbyte.com",
+    "careers_url": "https://airbyte.com/company/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "cockroach-labs",
+    "name": "Cockroach Labs",
+    "homepage": "https://www.cockroachlabs.com",
+    "careers_url": "https://www.cockroachlabs.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "grafana-labs",
+    "name": "Grafana Labs",
+    "homepage": "https://grafana.com",
+    "careers_url": "https://grafana.com/about/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "mercury",
+    "name": "Mercury",
+    "homepage": "https://mercury.com",
+    "careers_url": "https://mercury.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "deel",
+    "name": "Deel",
+    "homepage": "https://www.deel.com",
+    "careers_url": "https://www.deel.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "marqeta",
+    "name": "Marqeta",
+    "homepage": "https://www.marqeta.com",
+    "careers_url": "https://www.marqeta.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "navan",
+    "name": "Navan",
+    "homepage": "https://navan.com",
+    "careers_url": "https://navan.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "adyen",
+    "name": "Adyen",
+    "homepage": "https://www.adyen.com",
+    "careers_url": "https://www.adyen.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "klarna",
+    "name": "Klarna",
+    "homepage": "https://www.klarna.com",
+    "careers_url": "https://www.klarna.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "paylocity",
+    "name": "Paylocity",
+    "homepage": "https://www.paylocity.com",
+    "careers_url": "https://www.paylocity.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "paychex",
+    "name": "Paychex",
+    "homepage": "https://www.paychex.com",
+    "careers_url": "https://www.paychex.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "rapid7",
+    "name": "Rapid7",
+    "homepage": "https://www.rapid7.com",
+    "careers_url": "https://www.rapid7.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "tenable",
+    "name": "Tenable",
+    "homepage": "https://www.tenable.com",
+    "careers_url": "https://www.tenable.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "qualys",
+    "name": "Qualys",
+    "homepage": "https://www.qualys.com",
+    "careers_url": "https://www.qualys.com/company/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "snyk",
+    "name": "Snyk",
+    "homepage": "https://snyk.io",
+    "careers_url": "https://snyk.io/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "lacework",
+    "name": "Lacework",
+    "homepage": "https://www.lacework.com",
+    "careers_url": "https://www.lacework.com/company/careers",
+    "priority_tier": 3
+  },
+  {
+    "slug": "orca-security",
+    "name": "Orca Security",
+    "homepage": "https://orca.security",
+    "careers_url": "https://orca.security/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "linear",
+    "name": "Linear",
+    "homepage": "https://linear.app",
+    "careers_url": "https://linear.app/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "render",
+    "name": "Render",
+    "homepage": "https://render.com",
+    "careers_url": "https://render.com/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "temporal",
+    "name": "Temporal",
+    "homepage": "https://temporal.io",
+    "careers_url": "https://temporal.io/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "harness",
+    "name": "Harness",
+    "homepage": "https://www.harness.io",
+    "careers_url": "https://www.harness.io/careers",
+    "priority_tier": 2
+  },
+  {
+    "slug": "launchdarkly",
+    "name": "LaunchDarkly",
+    "homepage": "https://launchdarkly.com",
+    "careers_url": "https://launchdarkly.com/careers",
+    "priority_tier": 2
+  }
 ]

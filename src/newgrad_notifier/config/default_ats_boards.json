@@ -38,5 +38,13 @@
     "careers_url": "https://openai.com/careers/search",
     "priority_tier": 1,
     "enabled": true
+  },
+  {
+    "company_name": "Groq",
+    "platform": "greenhouse",
+    "identifier": "groq",
+    "careers_url": "https://groq.com/careers",
+    "priority_tier": 1,
+    "enabled": true
   }
 ]
