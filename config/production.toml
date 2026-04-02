@@ -106,3 +106,9 @@ provider = "duckduckgo_html"
 max_results_per_query = 10
 queries = []
 fixture_path = ""
+
+[sources]
+simplify_enabled = true
+ats_enabled = true
+company_pages_enabled = false
+web_search_enabled = true
