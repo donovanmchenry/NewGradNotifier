@@ -38,6 +38,12 @@ class ATSCollectorService(Collector):
             if collector is None:
                 context.logger.warning("Skipping unsupported ATS platform", extra={"context": {"platform": board.platform}})
                 continue
-            jobs.extend(collector.collect_board(board, context))
+            try:
+                jobs.extend(collector.collect_board(board, context))
+            except Exception as exc:
+                self.logger.warning(
+                    "Discovered ATS board failed",
+                    extra={"context": {"company": board.company_name, "platform": board.platform, "identifier": board.identifier, "error": str(exc)}},
+                )
         return jobs[: context.settings.collection.max_jobs_per_source]
 

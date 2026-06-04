@@ -15,3 +15,11 @@ class LLMRanker(ABC):
     def rank(self, profile: CandidateProfile, job: NormalizedJob, heuristic_result: RankingResult) -> RankingResult:
         """Return a validated structured ranking result."""
 
+    def rank_batch(
+        self,
+        profile: CandidateProfile,
+        jobs: list[tuple[NormalizedJob, RankingResult]],
+    ) -> list[RankingResult]:
+        """Rank a batch of jobs. Default implementation calls rank() individually."""
+        return [self.rank(profile, job, heuristic) for job, heuristic in jobs]
+

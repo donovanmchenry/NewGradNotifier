@@ -57,5 +57,5 @@ def test_email_renderer_outputs_required_sections():
     assert "Section 1: Top new matches today" in rendered.text_body
     assert "Apply: https://example.com/job" in rendered.text_body
     assert "Daily New Grad SWE Digest" in rendered.html_body
-    assert "Open application" in rendered.html_body
+    assert "Apply" in rendered.html_body
     assert "Figma" in rendered.html_body

@@ -119,6 +119,7 @@ class RankedJob(BaseModel):
     normalized_job: NormalizedJob
     ranking: RankingResult
     lifecycle_state: JobLifecycleState = JobLifecycleState.NEW
+    prev_fit_score: int | None = None
 
 
 class SearchResult(BaseModel):

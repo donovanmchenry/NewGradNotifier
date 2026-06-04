@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from datetime import timedelta
+from datetime import UTC, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -126,7 +126,10 @@ class Repository:
             return record, JobLifecycleState.NEW
 
         lifecycle_state = JobLifecycleState.SEEN
-        was_stale = (now - existing.last_seen_at) >= timedelta(days=7)
+        last_seen = existing.last_seen_at
+        if last_seen.tzinfo is None:
+            last_seen = last_seen.replace(tzinfo=UTC)
+        was_stale = (now - last_seen) >= timedelta(days=7)
         content_changed = existing.content_hash != normalized_job.content_hash
         if was_stale and content_changed:
             lifecycle_state = JobLifecycleState.REOPENED
@@ -218,6 +221,16 @@ class Repository:
         self.session.commit()
         self.session.refresh(record)
         return record
+
+    def fetch_previous_best_scoring(self, normalized_job_id: int, exclude_run_id: int) -> ScoringResultRecord | None:
+        statement = (
+            select(ScoringResultRecord)
+            .where(ScoringResultRecord.normalized_job_id == normalized_job_id)
+            .where(ScoringResultRecord.run_id != exclude_run_id)
+            .order_by(ScoringResultRecord.created_at.desc())
+            .limit(1)
+        )
+        return self.session.scalar(statement)
 
     def mark_user_status(self, job_id: int, state: JobLifecycleState, notes: str | None = None) -> None:
         record = self.session.get(NormalizedJobRecord, job_id)

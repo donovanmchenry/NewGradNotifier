@@ -4,6 +4,28 @@ from __future__ import annotations
 
 from urllib.parse import urlparse
 
+# Domains that are job aggregators / search results pages — fetching their HTML
+# produces garbage (page title as company name, no real job data).
+_AGGREGATOR_DOMAINS = frozenset({
+    "linkedin.com",
+    "indeed.com",
+    "glassdoor.com",
+    "ziprecruiter.com",
+    "simplyhired.com",
+    "monster.com",
+    "careerbuilder.com",
+    "dice.com",
+    "builtin.com",
+    "wellfound.com",
+    "levels.fyi",
+    "handshake.com",
+    "joinhandshake.com",
+    "google.com",  # google jobs widget
+    "bing.com",
+    "ihiretechnology.com",
+    "remoterocketship.com",
+})
+
 from newgrad_notifier.collectors.base import Collector, CollectorContext
 from newgrad_notifier.collectors.parsers import _split_embedded_title_location
 from newgrad_notifier.collectors.relevance import is_relevant_role, location_allowed
@@ -82,6 +104,10 @@ class WebSearchCollector(Collector):
                 direct_job = self._job_from_search_result(result, query, context)
                 if direct_job:
                     jobs.append(direct_job)
+                parsed_url = urlparse(str(result.url))
+                host = parsed_url.netloc.lower().lstrip("www.")
+                if any(host == d or host.endswith("." + d) for d in _AGGREGATOR_DOMAINS):
+                    continue
                 try:
                     html = context.http_client.get_text(str(result.url))
                 except Exception:  # pragma: no cover - network/HTML failures

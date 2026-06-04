@@ -11,6 +11,9 @@ from newgrad_notifier.ranking.heuristics import build_heuristic_ranking
 
 from newgrad_notifier.llm.base import LLMRanker
 
+# Only send jobs above this heuristic score to the LLM — skips obvious mismatches
+LLM_PREFILTER_SCORE = 50
+
 
 class RankingService:
     """Combine deterministic heuristics with optional LLM scoring."""
@@ -35,14 +38,17 @@ class RankingService:
             fallback_models=settings.llm.fallback_models,
         )
 
-    def rank(self, job: NormalizedJob) -> RankingResult:
+    def _heuristic(self, job: NormalizedJob) -> RankingResult:
         company_priority = self.company_priority.get(job.company_name.lower(), 3)
-        heuristic = build_heuristic_ranking(
+        return build_heuristic_ranking(
             job=job,
             profile=self.settings.candidate_profile,
             company_priority=company_priority,
         )
-        if self.llm_ranker is None:
+
+    def rank(self, job: NormalizedJob) -> RankingResult:
+        heuristic = self._heuristic(job)
+        if self.llm_ranker is None or heuristic.fit_score < LLM_PREFILTER_SCORE:
             return heuristic
         try:
             ranking = self.llm_ranker.rank(self.settings.candidate_profile, job, heuristic)
@@ -54,3 +60,31 @@ class RankingService:
                 extra={"context": {"company": job.company_name, "title": job.title, "error": str(exc)}},
             )
             return heuristic
+
+    def rank_all(self, jobs: list[NormalizedJob]) -> list[RankingResult]:
+        """Rank all jobs, using batched LLM calls only for jobs above the heuristic threshold."""
+        heuristics = [self._heuristic(job) for job in jobs]
+        if self.llm_ranker is None:
+            return heuristics
+
+        # Identify jobs that warrant LLM scoring
+        llm_indices = [i for i, h in enumerate(heuristics) if h.fit_score >= LLM_PREFILTER_SCORE]
+        if not llm_indices:
+            return heuristics
+
+        llm_inputs = [(jobs[i], heuristics[i]) for i in llm_indices]
+        self.logger.info(
+            "Batch LLM ranking",
+            extra={"context": {"total_jobs": len(jobs), "llm_candidates": len(llm_inputs)}},
+        )
+        try:
+            llm_results = self.llm_ranker.rank_batch(self.settings.candidate_profile, llm_inputs)
+            for idx, result in zip(llm_indices, llm_results):
+                result.scorer = "llm_openai"
+                heuristics[idx] = result
+        except Exception as exc:  # pragma: no cover - network/provider failures
+            self.logger.warning(
+                "Batch LLM ranking failed, using heuristics for all",
+                extra={"context": {"error": str(exc)}},
+            )
+        return heuristics

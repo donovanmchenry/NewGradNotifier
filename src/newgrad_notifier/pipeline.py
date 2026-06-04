@@ -8,7 +8,7 @@ from pathlib import Path
 from newgrad_notifier.collectors.base import CollectorContext
 from newgrad_notifier.collectors.factory import build_collectors
 from newgrad_notifier.config.settings import AppSettings, load_settings
-from newgrad_notifier.contracts import DigestStats, PipelineError, RankedJob, SourceType
+from newgrad_notifier.contracts import DigestStats, JobLifecycleState, PipelineError, RankedJob, SourceType
 from newgrad_notifier.db.repository import Repository
 from newgrad_notifier.db.seeding import seed_reference_data
 from newgrad_notifier.db.session import create_session_factory, init_db
@@ -90,15 +90,23 @@ def run_pipeline_once(config_path: str | None = None) -> None:
 
             stats.total_normalized = len(normalized_jobs)
             dedupe_result = deduper.dedupe(normalized_jobs)
+            unique_jobs = dedupe_result.unique_jobs
+            rankings = ranking_service.rank_all(unique_jobs)
             ranked_jobs: list[RankedJob] = []
-            for normalized in dedupe_result.unique_jobs:
+            for normalized, ranking in zip(unique_jobs, rankings):
                 record, lifecycle_state = repository.upsert_normalized_job(
                     normalized,
                     raw_job_ids.get(normalized.canonical_key),
                 )
-                ranking = ranking_service.rank(normalized)
+                # Overwrite default first_seen_at with the persisted DB value so cross-analysis is accurate
+                normalized = normalized.model_copy(update={"first_seen_at": record.first_seen_at})
                 repository.persist_scoring(run.id, record.id, ranking)
-                ranked_jobs.append(RankedJob(normalized_job=normalized, ranking=ranking, lifecycle_state=lifecycle_state))
+                prev_fit_score: int | None = None
+                if lifecycle_state != JobLifecycleState.NEW:
+                    prev_record = repository.fetch_previous_best_scoring(record.id, run.id)
+                    if prev_record is not None:
+                        prev_fit_score = prev_record.fit_score
+                ranked_jobs.append(RankedJob(normalized_job=normalized, ranking=ranking, lifecycle_state=lifecycle_state, prev_fit_score=prev_fit_score))
                 if lifecycle_state.value == "new":
                     stats.total_new += 1
                 if lifecycle_state.value == "reopened":

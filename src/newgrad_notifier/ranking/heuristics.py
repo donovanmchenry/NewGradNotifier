@@ -230,11 +230,33 @@ def build_heuristic_ranking(
     if difficulty_score >= 70:
         tags.append("reach")
     tags = sorted(set(tags))
+    _FIT_LABELS: dict[str, str] = {
+        "role_match": "role type matches your target",
+        "graduation_match": "explicitly targets new grads / class of 2027",
+        "entry_level_signal": "entry-level signal present",
+        "skill_overlap": "strong skill overlap",
+        "product_profile": "product-focused engineering role",
+        "experience_signal": "experience signals align",
+        "location_match": "location matches your preference",
+        "seniority_match": "no seniority red flags",
+        "brand_bonus": "priority company",
+    }
+    _DIFFICULTY_LABELS: dict[str, str] = {
+        "baseline": "standard entry-level bar",
+        "company_bar": "competitive / selective employer",
+        "niche_requirements": "niche technical requirements",
+        "missing_skills": "some skill gaps detected",
+        "competition": "high expected applicant volume",
+        "interview_bar": "rigorous technical interview signal",
+        "ambiguity": "role scope is unclear",
+    }
+    positive_fit = [_FIT_LABELS.get(k, k) for k, v in fit_breakdown.items() if v > 0]
     fit_summary = (
-        f"Fit {fit_score}/100: strongest signals are {', '.join(key for key, value in fit_breakdown.items() if value > 0) or 'limited overlap'}."
+        f"Fit {fit_score}/100 — {'; '.join(positive_fit)}." if positive_fit else f"Fit {fit_score}/100 — limited overlap with target profile."
     )
+    positive_diff = [_DIFFICULTY_LABELS.get(k, k) for k, v in difficulty_breakdown.items() if v > 0]
     difficulty_summary = (
-        f"Difficulty {difficulty_score}/100: driven by {', '.join(key for key, value in difficulty_breakdown.items() if value > 0) or 'standard entry-level expectations'}."
+        f"Difficulty {difficulty_score}/100 — {'; '.join(positive_diff)}." if positive_diff else f"Difficulty {difficulty_score}/100 — standard entry-level expectations."
     )
     return RankingResult(
         fit_score=fit_score,
