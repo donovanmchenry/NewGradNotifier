@@ -1,6 +1,7 @@
 from newgrad_notifier.config.settings import load_settings
-from newgrad_notifier.contracts import CollectedJob, SourceType
+from newgrad_notifier.contracts import CollectedJob, Recommendation, SourceType
 from newgrad_notifier.llm.openai_ranker import OpenAIRanker
+from newgrad_notifier.llm.schemas import RankingLLMResponse
 from newgrad_notifier.normalization.normalizer import normalize_job
 from newgrad_notifier.ranking.service import RankingService
 
@@ -36,20 +37,25 @@ def test_ranking_falls_back_to_heuristics_when_llm_fails():
 class _FakeOpenAIClient:
     def __init__(self) -> None:
         self.attempted_models: list[str] = []
+        self.beta = self
         self.chat = self
         self.completions = self
 
-    def create(self, *, model, response_format, messages):
+    def parse(self, *, model, response_format, messages):
         self.attempted_models.append(model)
         if model == "gpt-5-mini":
             raise RuntimeError("The model 'gpt-5-mini' does not exist or you do not have access to it.")
 
         class _Message:
-            content = (
-                '{"fit_score": 78, "difficulty_score": 63, "recommendation": "apply_if_interested", '
-                '"fit_summary": "Strong stack overlap.", "difficulty_summary": "Competitive but reasonable.", '
-                '"top_matching_skills": ["React", "TypeScript"], "missing_or_weaker_skills": ["Java"], '
-                '"tags": ["frontend", "new_grad"]}'
+            parsed = RankingLLMResponse(
+                fit_score=78,
+                difficulty_score=63,
+                recommendation=Recommendation.APPLY_IF_INTERESTED,
+                fit_summary="Strong stack overlap.",
+                difficulty_summary="Competitive but reasonable.",
+                top_matching_skills=["React", "TypeScript"],
+                missing_or_weaker_skills=["Java"],
+                tags=["frontend", "new_grad"],
             )
 
         class _Choice:

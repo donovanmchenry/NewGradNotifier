@@ -1,8 +1,7 @@
-"""OpenAI-backed ranker with strict Pydantic validation."""
+"""OpenAI-backed ranker using Structured Outputs."""
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
 from openai import OpenAI
@@ -11,7 +10,7 @@ from newgrad_notifier.config.settings import CandidateProfile
 from newgrad_notifier.contracts import NormalizedJob, RankingResult
 from newgrad_notifier.llm.base import LLMRanker
 from newgrad_notifier.llm.prompts import build_batch_ranking_messages, build_ranking_messages
-from newgrad_notifier.llm.schemas import RankingLLMResponse
+from newgrad_notifier.llm.schemas import BatchRankingResponse, RankingLLMResponse
 
 BATCH_SIZE = 20
 
@@ -28,7 +27,7 @@ class OpenAIRanker(LLMRanker):
     ) -> None:
         self.client = client or OpenAI(api_key=api_key)
         self.model = model
-        self.fallback_models = [candidate for candidate in fallback_models or [] if candidate and candidate != model]
+        self.fallback_models = [m for m in fallback_models or [] if m and m != model]
 
     @staticmethod
     def _is_model_availability_error(exc: Exception) -> bool:
@@ -48,14 +47,15 @@ class OpenAIRanker(LLMRanker):
         last_error: Exception | None = None
         for candidate_model in [self.model, *self.fallback_models]:
             try:
-                response = self.client.chat.completions.create(
+                response = self.client.beta.chat.completions.parse(
                     model=candidate_model,
-                    response_format={"type": "json_object"},
+                    response_format=RankingLLMResponse,
                     messages=build_ranking_messages(profile, job, heuristic_result),
                 )
-                content = response.choices[0].message.content or "{}"
-                payload = RankingLLMResponse.model_validate(json.loads(content))
-                return payload
+                parsed = response.choices[0].message.parsed
+                if parsed is None:
+                    raise RuntimeError("Structured output returned None")
+                return parsed
             except Exception as exc:
                 last_error = exc
                 if not self._is_model_availability_error(exc):
@@ -69,9 +69,8 @@ class OpenAIRanker(LLMRanker):
         profile: CandidateProfile,
         jobs: list[tuple[NormalizedJob, RankingResult]],
     ) -> list[RankingResult]:
-        """Rank multiple jobs in a single API call, falling back to per-job calls on parse failure."""
+        """Rank multiple jobs in a single API call, falling back to per-job calls on chunk failure."""
         results: list[RankingResult | None] = [None] * len(jobs)
-        # Process in chunks of BATCH_SIZE
         for chunk_start in range(0, len(jobs), BATCH_SIZE):
             chunk = jobs[chunk_start : chunk_start + BATCH_SIZE]
             try:
@@ -79,7 +78,6 @@ class OpenAIRanker(LLMRanker):
                 for i, result in enumerate(chunk_results):
                     results[chunk_start + i] = result
             except Exception:
-                # Fall back to per-job calls for this chunk
                 for i, (job, heuristic) in enumerate(chunk):
                     try:
                         results[chunk_start + i] = self.rank(profile, job, heuristic)
@@ -95,27 +93,22 @@ class OpenAIRanker(LLMRanker):
         last_error: Exception | None = None
         for candidate_model in [self.model, *self.fallback_models]:
             try:
-                response = self.client.chat.completions.create(
+                response = self.client.beta.chat.completions.parse(
                     model=candidate_model,
-                    response_format={"type": "json_object"},
+                    response_format=BatchRankingResponse,
                     messages=build_batch_ranking_messages(profile, chunk),
                 )
-                content = response.choices[0].message.content or "{}"
-                payload = json.loads(content)
-                raw_results = payload.get("results", [])
-                # Sort by index to preserve order, then validate each
-                raw_results.sort(key=lambda x: x.get("index", 0))
-                ranked = []
-                for i, item in enumerate(raw_results):
-                    item.pop("index", None)
-                    try:
-                        ranked.append(RankingLLMResponse.model_validate(item))
-                    except Exception:
-                        # Fall back to heuristic for this individual item
-                        ranked.append(chunk[i][1])
-                # Pad with heuristics if response was short
-                while len(ranked) < len(chunk):
-                    ranked.append(chunk[len(ranked)][1])
+                parsed = response.choices[0].message.parsed
+                if parsed is None:
+                    raise RuntimeError("Structured output returned None")
+                result_map = {item.index: item for item in parsed.results}
+                ranked: list[RankingResult] = []
+                for i, (_, heuristic) in enumerate(chunk):
+                    item = result_map.get(i)
+                    if item is not None:
+                        ranked.append(RankingLLMResponse.model_validate(item.model_dump(exclude={"index"})))
+                    else:
+                        ranked.append(heuristic)
                 return ranked
             except Exception as exc:
                 last_error = exc

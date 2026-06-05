@@ -22,8 +22,8 @@ outbox_dir = "outbox"
 
 [llm]
 provider = "openai"
-model = "gpt-5-mini"
-fallback_models = ["gpt-4.1-mini"]
+model = "gpt-4.1-mini"
+fallback_models = ["gpt-4o-mini"]
 openai_api_key = ""
 enabled = true
 
