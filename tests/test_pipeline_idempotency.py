@@ -10,6 +10,6 @@ def test_two_pipeline_runs_only_digest_jobs_once(monkeypatch, tmp_path, capsys):
     run_pipeline_once("config/local_dev.toml")
     second_output = capsys.readouterr().out
 
-    assert "new match" in first_output
-    assert "0 new matches" in second_output
+    assert "jobs worth a look" in first_output
+    assert "No strong new matches" in second_output
     assert "Apply: https://boards.greenhouse.io/figma/jobs/12345" not in second_output

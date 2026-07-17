@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from html import escape
+import re
 
 from newgrad_notifier.contracts import DigestStats, JobLifecycleState, PipelineError, RankedJob, Recommendation
 
@@ -18,12 +19,60 @@ class RenderedEmail:
     html_body: str
 
 
-def _posted_text(job: RankedJob) -> str:
-    return job.normalized_job.posted_at.date().isoformat() if job.normalized_job.posted_at else "Unknown"
+def _clean_plain_text(value: str, label: str) -> str:
+    """Turn stored scorer prose into short, readable email copy."""
+
+    value = re.sub(r"[\x00-\x1f\x7f-\x9f]\d?", " ", value)
+    value = value.translate(str.maketrans({"\u2013": "-", "\u2014": "-", "\u2011": "-", "\u2018": "'", "\u2019": "'"}))
+    value = re.sub(rf"^{label}\s+\d+/100\s*[-:]*\s*", "", value, flags=re.IGNORECASE)
+    value = re.sub(r";\s*", ". ", value)
+    value = re.sub(r"\s+", " ", value).strip(" .-")
+    sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", value) if part.strip()]
+    sentences = [part[0].upper() + part[1:] for part in sentences]
+    value = " ".join(sentences[:2])
+    if not value:
+        return "No additional detail was available."
+    value = value[0].upper() + value[1:]
+    return value if value.endswith((".", "!", "?")) else f"{value}."
 
 
-def _job_rationale(job: RankedJob) -> str:
-    return f"{job.ranking.fit_summary} {job.ranking.difficulty_summary}".strip()
+def _match_label(score: int) -> str:
+    if score >= 80:
+        return "Excellent"
+    if score >= 70:
+        return "Strong"
+    if score >= 60:
+        return "Good"
+    return "Possible"
+
+
+def _competition_label(score: int) -> str:
+    if score >= 70:
+        return "Very high"
+    if score >= 55:
+        return "High"
+    if score >= 40:
+        return "Moderate"
+    return "Typical"
+
+
+def _recommendation_text(recommendation: Recommendation) -> str:
+    return {
+        Recommendation.APPLY_NOW: "Apply soon",
+        Recommendation.APPLY_IF_INTERESTED: "Worth applying",
+        Recommendation.LOW_PRIORITY: "Optional",
+        Recommendation.SKIP: "Skip",
+    }[recommendation]
+
+
+def _readable_date(value: datetime | None) -> str:
+    if value is None:
+        return "date not listed"
+    return f"{value.strftime('%b')} {value.day}"
+
+
+def _run_date_text(value: datetime) -> str:
+    return f"{value.strftime('%A, %B')} {value.day}"
 
 
 def _days_since(dt: datetime, run_date: datetime) -> int:
@@ -48,15 +97,20 @@ def _cross_analysis_text(job: RankedJob, run_date: datetime) -> str:
 
 def _render_job_line(job: RankedJob, run_date: datetime) -> str:
     location = job.normalized_job.location_text or "Location not listed"
-    posted = _posted_text(job)
-    rationale = _job_rationale(job)
-    recommendation = job.ranking.recommendation.value.replace("_", " ")
+    recommendation = _recommendation_text(job.ranking.recommendation)
+    fit_summary = _clean_plain_text(job.ranking.fit_summary, "Fit")
+    difficulty_summary = _clean_plain_text(job.ranking.difficulty_summary, "Difficulty")
+    matching = ", ".join(job.ranking.top_matching_skills[:5]) or "general software engineering experience"
     lines = [
-        f"- {job.normalized_job.company_name} | {job.normalized_job.title} | {location} | "
-        f"posted {posted} | fit {job.ranking.fit_score} | difficulty {job.ranking.difficulty_score} | "
-        f"{recommendation}",
+        f"- {job.normalized_job.company_name} - {job.normalized_job.title}",
+        f"  {location} | Posted {_readable_date(job.normalized_job.posted_at)}",
+        f"  Recommendation: {recommendation}",
+        f"  Match: {_match_label(job.ranking.fit_score)} ({job.ranking.fit_score}/100) | "
+        f"Competition: {_competition_label(job.ranking.difficulty_score)} ({job.ranking.difficulty_score}/100)",
+        f"  Why it fits: {fit_summary}",
+        f"  Keep in mind: {difficulty_summary}",
+        f"  Matching experience: {matching}",
         f"  Apply: {job.normalized_job.apply_url}",
-        f"  Why: {rationale}",
     ]
     cross = _cross_analysis_text(job, run_date)
     if cross:
@@ -70,20 +124,26 @@ def _render_text_section(title: str, jobs: list[RankedJob], run_date: datetime) 
 
 def _render_html_job(job: RankedJob, run_date: datetime) -> str:
     location = escape(job.normalized_job.location_text or "Location not listed")
-    posted = escape(_posted_text(job))
-    recommendation = escape(job.ranking.recommendation.value.replace("_", " "))
-    rationale = escape(_job_rationale(job))
-    matching = escape(", ".join(job.ranking.top_matching_skills[:4]) or "Relevant SWE signals")
+    posted = escape(_readable_date(job.normalized_job.posted_at))
+    recommendation = escape(_recommendation_text(job.ranking.recommendation))
+    fit_summary = escape(_clean_plain_text(job.ranking.fit_summary, "Fit"))
+    difficulty_summary = escape(_clean_plain_text(job.ranking.difficulty_summary, "Difficulty"))
+    matching = escape(", ".join(job.ranking.top_matching_skills[:5]) or "General software engineering experience")
     cross = _cross_analysis_text(job, run_date)
-    cross_html = f'<br><em style="font-size:13px; color:#555555;">{escape(cross)}</em>' if cross else ""
+    cross_html = f'<p style="margin:10px 0 0; font-size:12px; color:#a1a1aa;">{escape(cross)}</p>' if cross else ""
     return (
-        f'<div style="margin:0 0 20px; padding:0 0 20px; border-bottom:1px solid #cccccc;">'
-        f'<strong>{escape(job.normalized_job.company_name)}</strong> &mdash; {escape(job.normalized_job.title)}<br>'
-        f'{location} | Posted {posted} | Fit: {job.ranking.fit_score} | Difficulty: {job.ranking.difficulty_score} | {recommendation}'
-        f'{cross_html}<br>'
-        f'{rationale}<br>'
-        f'<span style="font-size:13px; color:#555555;">Skills: {matching}</span><br>'
-        f'<a href="{escape(job.normalized_job.apply_url)}" style="color:#000000;">Apply</a>'
+        f'<div style="margin:0 0 16px; padding:20px; background:#18181b; border:1px solid #27272a; border-radius:8px;">'
+        f'<p style="margin:0 0 4px; font-size:17px; line-height:1.35; color:#fafafa;"><strong>{escape(job.normalized_job.company_name)}</strong></p>'
+        f'<p style="margin:0 0 8px; font-size:15px; line-height:1.4; color:#e4e4e7;">{escape(job.normalized_job.title)}</p>'
+        f'<p style="margin:0 0 12px; font-size:13px; color:#a1a1aa;">{location} &nbsp;&bull;&nbsp; Posted {posted}</p>'
+        f'<p style="margin:0 0 10px; font-size:14px;"><strong>{recommendation}</strong> &nbsp;&bull;&nbsp; '
+        f'{_match_label(job.ranking.fit_score)} match ({job.ranking.fit_score}/100) &nbsp;&bull;&nbsp; '
+        f'{_competition_label(job.ranking.difficulty_score)} competition ({job.ranking.difficulty_score}/100)</p>'
+        f'<p style="margin:0 0 8px; font-size:14px; line-height:1.5;"><strong>Why it fits:</strong> {fit_summary}</p>'
+        f'<p style="margin:0 0 8px; font-size:14px; line-height:1.5;"><strong>Keep in mind:</strong> {difficulty_summary}</p>'
+        f'<p style="margin:0 0 16px; font-size:13px; color:#a1a1aa;"><strong>Matching experience:</strong> {matching}</p>'
+        f'<a href="{escape(job.normalized_job.apply_url)}" style="display:inline-block; padding:9px 14px; background:#fafafa; color:#18181b; text-decoration:none; border:1px solid #fafafa; border-radius:6px; font-size:14px; font-weight:bold;">Apply now</a>'
+        f'{cross_html}'
         f'</div>'
     )
 
@@ -94,8 +154,8 @@ def _render_html_section(title: str, jobs: list[RankedJob], run_date: datetime) 
     else:
         entries = "\n".join(_render_html_job(job, run_date) for job in jobs)
     return (
-        f'<h3 style="margin:28px 0 12px; font-size:16px; border-bottom:1px solid #000000; padding-bottom:4px;">'
-        f'{escape(title)}</h3>\n{entries}'
+        f'<h2 style="margin:28px 0 12px; font-size:18px; color:#fafafa;">'
+        f'{escape(title)}</h2>\n{entries}'
     )
 
 
@@ -130,38 +190,41 @@ def render_daily_digest(
         if high_signal_threshold <= job.ranking.fit_score < top_priority_threshold
     ]
     lower_priority = [job for job in sorted_jobs if digest_min_fit <= job.ranking.fit_score < high_signal_threshold]
-    total_high_signal = len(top_matches) + len(reach_roles)
     subject = (
-        f"[NewGradNotifier] {run_date.date().isoformat()} - "
-        f"{len(sorted_jobs)} new match{'es' if len(sorted_jobs) != 1 else ''}, {total_high_signal} high-signal"
+        f"[NewGradNotifier] {len(sorted_jobs)} job{'s' if len(sorted_jobs) != 1 else ''} worth a look - "
+        f"{run_date.strftime('%b')} {run_date.day}"
     )
+    if not sorted_jobs:
+        subject = f"[NewGradNotifier] No strong new matches - {run_date.strftime('%b')} {run_date.day}"
 
     text_sections = [
-        f"Daily New Grad SWE Digest -- {run_date.date().isoformat()}",
+        f"Your new-grad job shortlist - {_run_date_text(run_date)}",
+        f"{len(sorted_jobs)} role{'s' if len(sorted_jobs) != 1 else ''} worth a look from {stats.total_new} new listings.",
         "",
-        *_render_text_section("Section 1: Top new matches today", top_matches, run_date),
-        *_render_text_section("Section 2: Reach roles worth applying to", reach_roles, run_date),
-        *_render_text_section("Section 3: Other new matches", lower_priority, run_date),
-        "Section 4: Summary stats by source",
-        *(["(none)"] if not stats.source_counts else [f"- {source}: {count}" for source, count in sorted(stats.source_counts.items())]),
+        *_render_text_section("Best matches", top_matches, run_date),
+        *_render_text_section("Also worth a look", reach_roles, run_date),
+        *_render_text_section("Lower priority", lower_priority, run_date),
+        "Search details",
+        f"- Checked {stats.total_collected} listings and found {stats.total_new} jobs you had not seen before.",
+        f"- Source issues: {len(errors)}",
         "",
-        "Section 5: Errors or failures",
-        *(["(none)"] if not errors else [f"- {error.source_name} [{error.stage}]: {error.message}" for error in errors]),
+        *([] if not errors else ["Source notes", *[f"- {error.source_name}: {error.message}" for error in errors]]),
     ]
 
-    source_stats_html = "".join(
-        f"<li>{escape(source)}: {count}</li>"
-        for source, count in sorted(stats.source_counts.items())
-    ) or "<li>No source stats recorded.</li>"
-    error_items_html = "".join(
-        f"<li><strong>{escape(error.source_name)}</strong> [{escape(error.stage)}]: {escape(error.message)}</li>"
-        for error in errors
-    ) or "<li>No collection failures reported.</li>"
+    error_html = ""
+    if errors:
+        error_items_html = "".join(
+            f"<li><strong>{escape(error.source_name)}</strong>: {escape(error.message)}</li>" for error in errors
+        )
+        error_html = (
+            '<h2 style="margin:28px 0 8px; font-size:18px; color:#fafafa;">Source notes</h2>'
+            f'<ul style="margin:0; padding-left:20px; font-size:13px; color:#a1a1aa;">{error_items_html}</ul>'
+        )
 
     html_sections = "\n".join([
-        _render_html_section("Top new matches today", top_matches, run_date),
-        _render_html_section("Reach roles worth applying to", reach_roles, run_date),
-        _render_html_section("Other new matches", lower_priority, run_date),
+        _render_html_section("Best matches", top_matches, run_date),
+        _render_html_section("Also worth a look", reach_roles, run_date),
+        _render_html_section("Lower priority", lower_priority, run_date),
     ])
 
     html_body = f"""<!doctype html>
@@ -169,24 +232,23 @@ def render_daily_digest(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
   <title>{escape(subject)}</title>
 </head>
-<body style="margin:0; padding:0; background:#ffffff; color:#000000; font-family:'Times New Roman', Times, serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff">
+<body style="margin:0; padding:0; background:#09090b; color:#e4e4e7; font-family:Arial, Helvetica, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#09090b">
     <tr>
       <td align="center">
         <table role="presentation" width="640" cellpadding="0" cellspacing="0" style="max-width:640px; width:100%;">
           <tr>
-            <td style="padding:32px 24px;">
-              <h1 style="margin:0 0 4px; font-size:22px; font-weight:bold; font-family:'Times New Roman', Times, serif;">Daily New Grad SWE Digest</h1>
-              <p style="margin:0 0 4px; font-size:14px;">{escape(run_date.date().isoformat())}</p>
-              <p style="margin:0 0 0; font-size:14px;">{total_high_signal} high-signal &nbsp;|&nbsp; {stats.total_new} new today &nbsp;|&nbsp; {stats.total_errors} errors</p>
-              <hr style="border:none; border-top:2px solid #000000; margin:16px 0 0;">
+            <td style="padding:32px 20px 40px;">
+              <h1 style="margin:0 0 6px; font-size:24px; line-height:1.25; color:#fafafa;">Your new-grad job shortlist</h1>
+              <p style="margin:0 0 6px; font-size:14px; color:#a1a1aa;">{escape(_run_date_text(run_date))}</p>
+              <p style="margin:0 0 24px; font-size:15px; line-height:1.5; color:#d4d4d8;">{len(sorted_jobs)} role{'s' if len(sorted_jobs) != 1 else ''} worth a look from {stats.total_new} new listings.</p>
               {html_sections}
-              <h3 style="margin:28px 0 8px; font-size:16px; border-bottom:1px solid #000000; padding-bottom:4px;">Summary stats by source</h3>
-              <ul style="margin:0 0 24px; padding-left:20px; font-size:14px;">{source_stats_html}</ul>
-              <h3 style="margin:0 0 8px; font-size:16px; border-bottom:1px solid #000000; padding-bottom:4px;">Collection errors</h3>
-              <ul style="margin:0; padding-left:20px; font-size:14px;">{error_items_html}</ul>
+              <p style="margin:28px 0 0; padding-top:16px; border-top:1px solid #27272a; font-size:12px; line-height:1.5; color:#a1a1aa;">Search details: {stats.total_collected} listings checked &nbsp;&bull;&nbsp; {stats.total_new} new &nbsp;&bull;&nbsp; {len(errors)} source issue{'s' if len(errors) != 1 else ''}</p>
+              {error_html}
             </td>
           </tr>
         </table>

@@ -51,8 +51,8 @@ class _FakeOpenAIClient:
                 fit_score=78,
                 difficulty_score=63,
                 recommendation=Recommendation.APPLY_IF_INTERESTED,
-                fit_summary="Strong stack overlap.",
-                difficulty_summary="Competitive but reasonable.",
+                fit_summary="Strong stack \x021overlap.",
+                difficulty_summary="Competitive \u2014 but reasonable.",
                 top_matching_skills=["React", "TypeScript"],
                 missing_or_weaker_skills=["Java"],
                 tags=["frontend", "new_grad"],
@@ -94,3 +94,5 @@ def test_openai_ranker_retries_with_fallback_model():
 
     assert client.attempted_models == ["gpt-5-mini", "gpt-4.1-mini"]
     assert result.fit_score == 78
+    assert result.fit_summary == "Strong stack overlap."
+    assert result.difficulty_summary == "Competitive - but reasonable."

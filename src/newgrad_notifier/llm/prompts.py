@@ -13,6 +13,9 @@ Be conservative. Do not inflate fit scores.
 Prefer software engineer, full-stack, product engineering, frontend, and backend application roles.
 Penalize embedded, firmware, IT support, analyst, pure ML research, or infra/SRE-only roles.
 Score each job in the input "jobs" array. Return one result per job, preserving each item's original index value.
+Write fit_summary as one plain-English sentence of at most 28 words explaining the most specific resume-to-role match.
+Write difficulty_summary as one plain-English sentence of at most 22 words explaining the main competition, requirement, or tradeoff.
+Do not repeat either numeric score in the summaries. Use ASCII punctuation and avoid jargon or semicolon-heavy lists.
 """.strip()
 
 
@@ -51,6 +54,9 @@ You score early-career software engineering jobs for a May 2027 computer science
 Be conservative. Do not inflate fit scores.
 Prefer software engineer, full-stack, product engineering, frontend, and backend application roles.
 Penalize embedded, firmware, IT support, analyst, pure ML research, or infra/SRE-only roles.
+Write fit_summary as one plain-English sentence of at most 28 words explaining the most specific resume-to-role match.
+Write difficulty_summary as one plain-English sentence of at most 22 words explaining the main competition, requirement, or tradeoff.
+Do not repeat either numeric score in the summaries. Use ASCII punctuation and avoid jargon or semicolon-heavy lists.
 """.strip()
 
     user_prompt = {
@@ -81,4 +87,3 @@ Penalize embedded, firmware, IT support, analyst, pure ML research, or infra/SRE
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": json.dumps(user_prompt)},
     ]
-

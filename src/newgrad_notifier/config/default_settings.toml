@@ -103,10 +103,10 @@ keywords = [
 [candidate_profile]
 graduation_month = "May"
 graduation_year = 2027
-headline = "Strong full-stack and product-focused computer science student"
+headline = "U.S. citizen and May 2027 computer science student with full-stack, product, and production AI engineering experience"
 internships = [
-  "Software Engineering Intern at Obsidian Security",
-  "Incoming Summer 2026 Software Engineer Intern at Universal Music Group",
+  "Software Engineer Intern at Universal Music Group: built a Flask and React dashboard for Langfuse AI telemetry, cost, latency, token usage, and workflow optimization",
+  "Software Engineer Intern at Obsidian Security: shipped React and TypeScript enterprise deployment features and built deterministic Node.js and Bash validation tooling",
 ]
 preferred_roles = [
   "software engineer",
@@ -130,6 +130,7 @@ skills = [
   "Zustand",
   "Apollo Client",
   "FastAPI",
+  "Flask",
   "Node.js",
   "Express",
   "Pydantic",
@@ -137,12 +138,15 @@ skills = [
   "Docker",
   "Git",
   "GitHub Actions",
+  "Langfuse",
+  "Retrieval-Augmented Generation",
+  "Model Context Protocol",
   "Selenium",
-  "FFmpeg",
 ]
 project_signals = [
-  "Built a full-stack scheduler serving 800+ users with automation pipelines",
-  "Built an AI-powered educational video product",
+  "Built NJIT Schedule Pro with Next.js, FastAPI, Docker, a constraint solver, and structured LLM output for 800+ users",
+  "Taught 100+ students RAG, MCP servers, tool calling, structured JSON, and agentic AI workflows as an Anthropic Claude Campus Ambassador",
+  "Founded and led the NJIT Claude Builder Club, organizing technical workshops and AI application hackathons",
 ]
 
 [sources]

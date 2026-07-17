@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from openai import OpenAI
@@ -13,6 +14,23 @@ from newgrad_notifier.llm.prompts import build_batch_ranking_messages, build_ran
 from newgrad_notifier.llm.schemas import BatchRankingResponse, RankingLLMResponse
 
 BATCH_SIZE = 20
+
+
+def _clean_summary(value: str) -> str:
+    """Remove malformed control sequences and normalize model-written punctuation."""
+
+    cleaned = re.sub(r"[\x00-\x1f\x7f-\x9f]\d?", " ", value)
+    cleaned = cleaned.translate(str.maketrans({"\u2013": "-", "\u2014": "-", "\u2011": "-", "\u2018": "'", "\u2019": "'"}))
+    return re.sub(r"\s+", " ", cleaned).strip()
+
+
+def _clean_result(result: RankingResult) -> RankingResult:
+    return result.model_copy(
+        update={
+            "fit_summary": _clean_summary(result.fit_summary),
+            "difficulty_summary": _clean_summary(result.difficulty_summary),
+        }
+    )
 
 
 class OpenAIRanker(LLMRanker):
@@ -55,7 +73,7 @@ class OpenAIRanker(LLMRanker):
                 parsed = response.choices[0].message.parsed
                 if parsed is None:
                     raise RuntimeError("Structured output returned None")
-                return parsed
+                return _clean_result(parsed)
             except Exception as exc:
                 last_error = exc
                 if not self._is_model_availability_error(exc):
@@ -106,7 +124,9 @@ class OpenAIRanker(LLMRanker):
                 for i, (_, heuristic) in enumerate(chunk):
                     item = result_map.get(i)
                     if item is not None:
-                        ranked.append(RankingLLMResponse.model_validate(item.model_dump(exclude={"index"})))
+                        ranked.append(
+                            _clean_result(RankingLLMResponse.model_validate(item.model_dump(exclude={"index"})))
+                        )
                     else:
                         ranked.append(heuristic)
                 return ranked

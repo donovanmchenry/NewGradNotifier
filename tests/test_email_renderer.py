@@ -53,12 +53,20 @@ def test_email_renderer_outputs_required_sections():
         top_priority_threshold=80,
     )
 
-    assert "2026-08-22" in rendered.subject
-    assert "Section 1: Top new matches today" in rendered.text_body
+    assert "1 job worth a look - Aug 22" in rendered.subject
+    assert "Best matches" in rendered.text_body
+    assert "Why it fits: Strong role and stack match." in rendered.text_body
+    assert "Competition: High (66/100)" in rendered.text_body
     assert "Apply: https://example.com/job" in rendered.text_body
-    assert "Daily New Grad SWE Digest" in rendered.html_body
-    assert "Apply" in rendered.html_body
+    assert "Your new-grad job shortlist" in rendered.html_body
+    assert "Apply now" in rendered.html_body
     assert "Figma" in rendered.html_body
+    assert "simplify" not in rendered.html_body
+    assert 'name="color-scheme" content="dark"' in rendered.html_body
+    assert "background:#09090b" in rendered.html_body
+    assert "background:#18181b" in rendered.html_body
+    assert "background:#fafafa" in rendered.html_body
+    assert "#3b82f6" not in rendered.html_body
 
 
 def test_email_renderer_excludes_seen_jobs_and_caps_the_shortlist():
@@ -104,7 +112,47 @@ def test_email_renderer_excludes_seen_jobs_and_caps_the_shortlist():
 
     assert "Company 0" not in rendered.text_body
     assert rendered.text_body.count("  Apply:") == 5
-    assert "5 new matches" in rendered.subject
+    assert "5 jobs worth a look" in rendered.subject
+
+
+def test_email_renderer_removes_control_characters_and_score_prefixes():
+    ranked_job = RankedJob(
+        normalized_job=NormalizedJob(
+            canonical_key="plain-english",
+            source_name="fixture",
+            source_type=SourceType.STRUCTURED,
+            source_url="fixture.json",
+            apply_url="https://example.com/plain-english",
+            company_name="Example",
+            title="Software Engineer, New Grad",
+            title_normalized="software engineer new grad",
+            description_text="Python and React role.",
+            description_hash="description",
+            content_hash="content",
+        ),
+        ranking=RankingResult(
+            fit_score=75,
+            difficulty_score=45,
+            recommendation=Recommendation.APPLY_IF_INTERESTED,
+            fit_summary="Fit 75/100 \x021strong Python overlap; product work aligns.",
+            difficulty_summary="Difficulty 45/100 \x021high applicant volume.",
+            top_matching_skills=["Python", "React"],
+        ),
+    )
+
+    rendered = render_daily_digest(
+        run_date=datetime(2026, 8, 22, tzinfo=UTC),
+        ranked_jobs=[ranked_job],
+        stats=DigestStats(total_collected=20, total_new=10),
+        errors=[],
+        high_signal_threshold=65,
+        top_priority_threshold=80,
+    )
+
+    assert "\x02" not in rendered.text_body
+    assert "1strong" not in rendered.text_body
+    assert "Why it fits: Strong Python overlap. Product work aligns." in rendered.text_body
+    assert "Keep in mind: High applicant volume." in rendered.text_body
 
 
 def test_immediate_alert_only_fires_for_actionable_lifecycle():
