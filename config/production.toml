@@ -34,12 +34,18 @@ immediate_alerts_enabled = true
 immediate_alert_threshold = 92
 
 [thresholds]
-digest_min_fit = 65
-top_priority_fit = 78
+digest_min_fit = 60
+top_priority_fit = 72
 high_signal_fit = 65
+max_digest_jobs = 8
 
 [collection]
 max_company_pages_per_run = 75
+max_jobs_per_source = 500
+max_description_fetches_per_run = 30
+min_description_characters = 160
+max_job_age_days = 45
+min_domain_interval_seconds = 0.25
 
 [filters]
 remote_preference = "mixed"
@@ -86,6 +92,20 @@ keywords = [
 ]
 
 [[structured_feeds]]
+name = "new_grad_jobs_repo"
+url = "https://raw.githubusercontent.com/ambicuity/New-Grad-Jobs/main/docs/jobs.json"
+format = "json"
+job_path = "jobs"
+company_key = "company"
+title_key = "title"
+url_key = "url"
+location_key = "location"
+posted_at_key = "posted_at"
+description_key = "description"
+job_id_key = "id"
+closed_key = "is_closed"
+
+[[structured_feeds]]
 name = "simplify_new_grad"
 url = "https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/.github/scripts/listings.json"
 format = "json"
@@ -97,6 +117,11 @@ location_key = "locations"
 posted_at_key = "date_posted"
 description_key = ""
 job_id_key = "id"
+
+[[markdown_feeds]]
+name = "speedyapply_2027"
+url = "https://raw.githubusercontent.com/speedyapply/2026-SWE-College-Jobs/main/NEW_GRAD_USA.md"
+max_age_days = 45
 
 [company_coverage]
 list_path = ""
@@ -111,4 +136,4 @@ fixture_path = ""
 simplify_enabled = true
 ats_enabled = true
 company_pages_enabled = false
-web_search_enabled = true
+web_search_enabled = false

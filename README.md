@@ -41,18 +41,21 @@ Production-ready daily discovery, dedupe, ranking, and email notification pipeli
 ## What This Repo Does
 
 - Collects jobs from:
-  - structured early-career sources
-  - Greenhouse, Lever, Ashby, Workday, and SmartRecruiters
+  - description-rich New-Grad-Jobs and Simplify repository feeds
+  - the SpeedyApply 2027 U.S. new-grad list
+  - 46 curated Greenhouse, Lever, and Ashby boards
   - tracked company careers pages
-  - general web search
+  - optional general web search
 - Filters toward US and remote early-career SWE roles
 - Avoids internships, co-ops, IT/support, analyst, hardware, embedded, firmware, QA, and infra-heavy mismatch roles
 - Deduplicates across sources by ATS ID, URL, title/company aliases, and content hash
 - Stores raw jobs, normalized jobs, scoring, status history, and email digests in SQLite by default
 - Uses OpenAI ranking refinement when configured and falls back to heuristics if unavailable
 - Sends:
-  - a daily digest
+  - a daily digest capped to the best 8 new or reopened matches
   - immediate alerts for very high-fit new roles at `fit_score >= 92`
+- Enriches a bounded set of sparse listings from their direct application pages
+- Avoids rescoring or re-emailing jobs that were already seen
 
 ## Local Setup
 
@@ -113,6 +116,7 @@ These are the production env var names expected by the app:
 - `SQLITE_PATH`
 - `DATABASE_URL` for PostgreSQL override
 - `OPENAI_API_KEY`
+- `OPENAI_ENABLED` (`false` provides a no-cost heuristic-only kill switch)
 - `OPENAI_MODEL`
 - `OPENAI_FALLBACK_MODELS`
 - `RUN_TIME_LOCAL`
@@ -147,7 +151,7 @@ SMTP still works as a fallback provider.
 
 ## OpenAI Ranking Behavior
 
-- Production config defaults to `OPENAI_MODEL=gpt-5-mini`
+- Production config defaults to `OPENAI_MODEL=gpt-4.1-mini`
 - If the configured model is unavailable to your API key, the ranker automatically retries with `OPENAI_FALLBACK_MODELS` before falling back to heuristics
 - If `OPENAI_API_KEY` is not set, the app logs a warning and automatically falls back to heuristic-only scoring
 - The pipeline does not crash when OpenAI is unavailable
@@ -170,7 +174,8 @@ What it does:
 
 - runs on `workflow_dispatch`
 - runs on a UTC schedule twice per day (`12:00` and `13:00` UTC)
-- gates execution so the actual run only happens around `08:00` in `America/New_York`
+- restores persisted state before deciding whether the local day already ran
+- tolerates delayed cron delivery and runs only once after `08:00` in `America/New_York`
 - skips scheduled runs entirely until `2026-07-01`
 - restores the last SQLite state artifact if one exists
 - runs tests
@@ -200,6 +205,7 @@ You can set these as repository variables, though the workflow already includes 
 - `DB_BACKEND`
 - `SQLITE_PATH`
 - `OPENAI_MODEL`
+- `OPENAI_ENABLED`
 - `RUN_TIME_LOCAL`
 - `TIME_ZONE`
 

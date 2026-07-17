@@ -57,11 +57,15 @@ class ThresholdSettings(BaseModel):
     digest_min_fit: int = 65
     top_priority_fit: int = 80
     high_signal_fit: int = 65
+    max_digest_jobs: int = 10
 
 
 class CollectionSettings(BaseModel):
-    max_jobs_per_source: int = 250
+    max_jobs_per_source: int = 500
     max_company_pages_per_run: int = 75
+    max_description_fetches_per_run: int = 30
+    min_description_characters: int = 160
+    max_job_age_days: int = 45
     min_domain_interval_seconds: float = 1.0
     request_timeout_seconds: int = 20
     cache_ttl_seconds: int = 60 * 60 * 6
@@ -109,6 +113,13 @@ class StructuredFeedConfig(BaseModel):
     posted_at_key: str = "posted_at"
     description_key: str = "description"
     job_id_key: str | None = "job_id"
+    closed_key: str = ""
+
+
+class MarkdownFeedConfig(BaseModel):
+    name: str
+    url: str
+    max_age_days: int = 45
 
 
 class ATSBoardConfig(BaseModel):
@@ -149,6 +160,7 @@ class AppSettings(BaseModel):
     company_coverage: CompanyCoverageSettings = Field(default_factory=CompanyCoverageSettings)
     web_search: WebSearchSettings = Field(default_factory=WebSearchSettings)
     structured_feeds: list[StructuredFeedConfig] = Field(default_factory=list)
+    markdown_feeds: list[MarkdownFeedConfig] = Field(default_factory=list)
     ats_boards: list[ATSBoardConfig] = Field(default_factory=list)
     runtime_warnings: list[str] = Field(default_factory=list)
 
@@ -164,6 +176,7 @@ def _apply_environment_overrides(payload: dict[str, Any]) -> dict[str, Any]:
         "DATABASE_URL": ("database", "url"),
         "SQLITE_PATH": ("database", "sqlite_path"),
         "OPENAI_API_KEY": ("llm", "openai_api_key"),
+        "OPENAI_ENABLED": ("llm", "enabled"),
         "OPENAI_MODEL": ("llm", "model"),
         "OPENAI_FALLBACK_MODELS": ("llm", "fallback_models"),
         "RESEND_API_KEY": ("email", "resend_api_key"),
@@ -194,7 +207,7 @@ def _apply_environment_overrides(payload: dict[str, Any]) -> dict[str, Any]:
             cursor = cursor.setdefault(part, {})
         if path_parts[-1] in {"smtp_port", "immediate_alert_threshold"}:
             cursor[path_parts[-1]] = int(value)
-        elif path_parts[-1] in {"smtp_use_tls", "immediate_alerts_enabled"}:
+        elif path_parts[-1] in {"smtp_use_tls", "immediate_alerts_enabled", "enabled"}:
             cursor[path_parts[-1]] = value.lower() in {"1", "true", "yes"}
         elif path_parts[-1] == "fallback_models":
             cursor[path_parts[-1]] = [item.strip() for item in value.split(",") if item.strip()]

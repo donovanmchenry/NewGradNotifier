@@ -1,9 +1,11 @@
-"""Gate GitHub Actions schedule triggers to 8:00 AM in the configured local timezone."""
+"""Run once per local day despite delayed or duplicate GitHub cron triggers."""
 
 from __future__ import annotations
 
 import os
+import sqlite3
 from datetime import date, datetime
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 
@@ -18,13 +20,42 @@ def main() -> int:
         if now.date() < start_date:
             print(f"Scheduled automation starts on {start_date.isoformat()}; skipping this trigger.")
             return 1
-    minute_delta = abs((now.hour * 60 + now.minute) - (target_hour * 60 + target_minute))
     print(f"Current local time in {timezone_name}: {now.isoformat()}")
-    if minute_delta <= 20:
-        print("Within the scheduled execution window.")
+    current_minutes = now.hour * 60 + now.minute
+    target_minutes = target_hour * 60 + target_minute
+    if current_minutes < target_minutes:
+        print("The first UTC trigger arrived before the configured local run time; waiting for the next trigger.")
+        return 1
+
+    sqlite_path = Path(os.getenv("SQLITE_PATH", "./data/newgradnotifier.db"))
+    if not sqlite_path.exists():
+        print("No persisted run history exists; the pipeline should run.")
         return 0
-    print("Outside the scheduled execution window; skipping this trigger.")
-    return 1
+
+    try:
+        with sqlite3.connect(f"file:{sqlite_path}?mode=ro", uri=True) as connection:
+            table_exists = connection.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='daily_runs'"
+            ).fetchone()
+            if not table_exists:
+                return 0
+            rows = connection.execute(
+                "SELECT started_at FROM daily_runs WHERE status = 'completed' ORDER BY started_at DESC LIMIT 5"
+            ).fetchall()
+    except sqlite3.Error as exc:
+        print(f"Unable to inspect run history ({exc}); allowing the pipeline to run.")
+        return 0
+
+    for (started_at_text,) in rows:
+        started_at = datetime.fromisoformat(started_at_text)
+        if started_at.tzinfo is None:
+            started_at = started_at.replace(tzinfo=ZoneInfo("UTC"))
+        if started_at.astimezone(ZoneInfo(timezone_name)).date() == now.date():
+            print("A completed run already exists for this local date; skipping the duplicate trigger.")
+            return 1
+
+    print("No completed run exists for this local date; the pipeline should run.")
+    return 0
 
 
 if __name__ == "__main__":

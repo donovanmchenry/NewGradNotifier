@@ -6,9 +6,11 @@ import logging
 from pathlib import Path
 
 from newgrad_notifier.collectors.base import CollectorContext
+from newgrad_notifier.collectors.enrichment import enrich_sparse_jobs
 from newgrad_notifier.collectors.factory import build_collectors
 from newgrad_notifier.config.settings import AppSettings, load_settings
-from newgrad_notifier.contracts import DigestStats, JobLifecycleState, PipelineError, RankedJob, SourceType
+from newgrad_notifier.contracts import DigestStats, JobLifecycleState, NormalizedJob, PipelineError, RankedJob
+from newgrad_notifier.db.models import DailyRun, NormalizedJobRecord
 from newgrad_notifier.db.repository import Repository
 from newgrad_notifier.db.seeding import seed_reference_data
 from newgrad_notifier.db.session import create_session_factory, init_db
@@ -49,11 +51,13 @@ def run_pipeline_once(config_path: str | None = None) -> None:
     http_client = build_http_client(settings)
     errors: list[PipelineError] = []
     stats = DigestStats()
+    run_id: int | None = None
     try:
         with session_factory() as session:
             seed_reference_data(session, settings)
             repository = Repository(session)
             run = repository.create_run()
+            run_id = run.id
             collectors = build_collectors(settings)
             context = CollectorContext(settings=settings, http_client=http_client, logger=logger)
             collected_jobs = []
@@ -61,6 +65,15 @@ def run_pipeline_once(config_path: str | None = None) -> None:
                 try:
                     collector_jobs = collector.collect(context)
                     collected_jobs.extend(collector_jobs)
+                    errors.extend(getattr(collector, "errors", []))
+                    if not collector_jobs and collector.name.startswith(("structured:", "markdown:")):
+                        errors.append(
+                            PipelineError(
+                                source_name=collector.name,
+                                stage="health",
+                                message="Primary repository source returned zero relevant jobs",
+                            )
+                        )
                 except Exception as exc:  # pragma: no cover - network/source failures
                     logger.exception("Collector failed", extra={"context": {"collector": collector.name}})
                     errors.append(
@@ -73,9 +86,8 @@ def run_pipeline_once(config_path: str | None = None) -> None:
                     )
             stats.total_collected = len(collected_jobs)
             stats.source_counts = {
-                source_type.value: sum(1 for job in collected_jobs if job.source_type == source_type)
-                for source_type in SourceType
-                if any(job.source_type == source_type for job in collected_jobs)
+                source_name: sum(1 for job in collected_jobs if job.source_name == source_name)
+                for source_name in {job.source_name for job in collected_jobs}
             }
             if stats.source_counts:
                 stats.source_counts = dict(sorted(stats.source_counts.items()))
@@ -91,15 +103,36 @@ def run_pipeline_once(config_path: str | None = None) -> None:
             stats.total_normalized = len(normalized_jobs)
             dedupe_result = deduper.dedupe(normalized_jobs)
             unique_jobs = dedupe_result.unique_jobs
-            rankings = ranking_service.rank_all(unique_jobs)
-            ranked_jobs: list[RankedJob] = []
-            for normalized, ranking in zip(unique_jobs, rankings):
+            new_candidates = [job for job in unique_jobs if repository.find_normalized_job(job.canonical_key) is None]
+            enriched_by_key = {
+                job.canonical_key: job
+                for job in enrich_sparse_jobs(
+                    new_candidates,
+                    http_client=http_client,
+                    max_fetches=settings.collection.max_description_fetches_per_run,
+                    min_characters=settings.collection.min_description_characters,
+                    logger=logger,
+                )
+            }
+            unique_jobs = [enriched_by_key.get(job.canonical_key, job) for job in unique_jobs]
+
+            persisted_jobs: list[tuple[NormalizedJob, JobLifecycleState, NormalizedJobRecord]] = []
+            for normalized in unique_jobs:
                 record, lifecycle_state = repository.upsert_normalized_job(
                     normalized,
                     raw_job_ids.get(normalized.canonical_key),
                 )
-                # Overwrite default first_seen_at with the persisted DB value so cross-analysis is accurate
                 normalized = normalized.model_copy(update={"first_seen_at": record.first_seen_at})
+                persisted_jobs.append((normalized, lifecycle_state, record))
+                if lifecycle_state == JobLifecycleState.NEW:
+                    stats.total_new += 1
+                if lifecycle_state == JobLifecycleState.REOPENED:
+                    stats.total_reopened += 1
+
+            actionable = [item for item in persisted_jobs if item[1] in {JobLifecycleState.NEW, JobLifecycleState.REOPENED}]
+            rankings = ranking_service.rank_all([item[0] for item in actionable])
+            ranked_jobs: list[RankedJob] = []
+            for (normalized, lifecycle_state, record), ranking in zip(actionable, rankings):
                 repository.persist_scoring(run.id, record.id, ranking)
                 prev_fit_score: int | None = None
                 if lifecycle_state != JobLifecycleState.NEW:
@@ -107,10 +140,6 @@ def run_pipeline_once(config_path: str | None = None) -> None:
                     if prev_record is not None:
                         prev_fit_score = prev_record.fit_score
                 ranked_jobs.append(RankedJob(normalized_job=normalized, ranking=ranking, lifecycle_state=lifecycle_state, prev_fit_score=prev_fit_score))
-                if lifecycle_state.value == "new":
-                    stats.total_new += 1
-                if lifecycle_state.value == "reopened":
-                    stats.total_reopened += 1
                 if ranking.fit_score >= settings.thresholds.high_signal_fit:
                     stats.total_high_signal += 1
                     if settings.schedule.immediate_alerts_enabled and should_send_immediate_alert(
@@ -134,6 +163,8 @@ def run_pipeline_once(config_path: str | None = None) -> None:
                 errors=errors,
                 high_signal_threshold=settings.thresholds.high_signal_fit,
                 top_priority_threshold=settings.thresholds.top_priority_fit,
+                digest_min_fit=settings.thresholds.digest_min_fit,
+                max_digest_jobs=settings.thresholds.max_digest_jobs,
             )
             email_sender.send(
                 rendered_digest.subject,
@@ -147,7 +178,18 @@ def run_pipeline_once(config_path: str | None = None) -> None:
                 rendered_digest.subject,
                 rendered_digest.text_body,
                 stats,
+                body_html=rendered_digest.html_body,
             )
             repository.complete_run(run, stats, errors)
+    except Exception as exc:
+        if run_id is not None:
+            with session_factory() as failure_session:
+                failed_run = failure_session.get(DailyRun, run_id)
+                if failed_run is not None:
+                    Repository(failure_session).fail_run(
+                        failed_run,
+                        PipelineError(source_name="pipeline", stage="fatal", message="Pipeline failed", detail=str(exc)),
+                    )
+        raise
     finally:
         http_client.close()

@@ -9,7 +9,7 @@ from newgrad_notifier.contracts import (
     Recommendation,
     SourceType,
 )
-from newgrad_notifier.notifications.email_renderer import render_daily_digest
+from newgrad_notifier.notifications.email_renderer import render_daily_digest, should_send_immediate_alert
 
 
 def test_email_renderer_outputs_required_sections():
@@ -59,3 +59,81 @@ def test_email_renderer_outputs_required_sections():
     assert "Daily New Grad SWE Digest" in rendered.html_body
     assert "Apply" in rendered.html_body
     assert "Figma" in rendered.html_body
+
+
+def test_email_renderer_excludes_seen_jobs_and_caps_the_shortlist():
+    jobs = []
+    for index in range(12):
+        lifecycle = JobLifecycleState.SEEN if index == 0 else JobLifecycleState.NEW
+        jobs.append(
+            RankedJob(
+                normalized_job=NormalizedJob(
+                    canonical_key=f"job-{index}",
+                    source_name="fixture",
+                    source_type=SourceType.STRUCTURED,
+                    source_url="fixture.json",
+                    apply_url=f"https://example.com/{index}",
+                    company_name=f"Company {index}",
+                    title="Software Engineer, New Grad 2027",
+                    title_normalized="software engineer new grad 2027",
+                    description_text="React and TypeScript product engineering role.",
+                    description_hash=f"description-{index}",
+                    content_hash=f"content-{index}",
+                ),
+                ranking=RankingResult(
+                    fit_score=90 - index,
+                    difficulty_score=50,
+                    recommendation=Recommendation.APPLY_NOW,
+                    fit_summary="Strong match.",
+                    difficulty_summary="Reasonable reach.",
+                ),
+                lifecycle_state=lifecycle,
+            )
+        )
+
+    rendered = render_daily_digest(
+        run_date=datetime(2026, 8, 22, tzinfo=UTC),
+        ranked_jobs=jobs,
+        stats=DigestStats(total_new=11),
+        errors=[],
+        high_signal_threshold=65,
+        top_priority_threshold=80,
+        digest_min_fit=55,
+        max_digest_jobs=5,
+    )
+
+    assert "Company 0" not in rendered.text_body
+    assert rendered.text_body.count("  Apply:") == 5
+    assert "5 new matches" in rendered.subject
+
+
+def test_immediate_alert_only_fires_for_actionable_lifecycle():
+    ranked_job = RankedJob(
+        normalized_job=NormalizedJob(
+            canonical_key="alert-job",
+            source_name="fixture",
+            source_type=SourceType.STRUCTURED,
+            source_url="fixture.json",
+            apply_url="https://example.com/alert-job",
+            company_name="Example",
+            title="Software Engineer, New Grad 2027",
+            title_normalized="software engineer new grad 2027",
+            description_text="Entry-level product engineering role.",
+            description_hash="description",
+            content_hash="content",
+        ),
+        ranking=RankingResult(
+            fit_score=95,
+            difficulty_score=50,
+            recommendation=Recommendation.APPLY_NOW,
+            fit_summary="Strong match.",
+            difficulty_summary="Competitive.",
+        ),
+        lifecycle_state=JobLifecycleState.NEW,
+    )
+
+    assert should_send_immediate_alert(ranked_job, threshold=92)
+    assert not should_send_immediate_alert(
+        ranked_job.model_copy(update={"lifecycle_state": JobLifecycleState.SEEN}),
+        threshold=92,
+    )

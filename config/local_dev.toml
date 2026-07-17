@@ -2,6 +2,9 @@ environment = "local-dev"
 log_level = "INFO"
 cache_dir = ".cache/local-dev"
 
+[collection]
+max_description_fetches_per_run = 0
+
 [database]
 backend = "sqlite"
 sqlite_path = "./data/local_dev.db"

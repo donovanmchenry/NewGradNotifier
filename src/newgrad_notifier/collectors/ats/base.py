@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from newgrad_notifier.collectors.base import CollectorContext
-from newgrad_notifier.collectors.relevance import is_relevant_role, location_allowed
+from newgrad_notifier.collectors.relevance import cohort_allowed, is_relevant_role, location_allowed
 from newgrad_notifier.config.settings import ATSBoardConfig
 from newgrad_notifier.contracts import CollectedJob, SourceType
 
@@ -41,6 +41,8 @@ class ATSBoardCollector(ABC):
         description = description_text or ""
         if not is_relevant_role(title, description, context.settings):
             return None
+        if not cohort_allowed(f"{title} {apply_url}", context.settings):
+            return None
         if not location_allowed(location_text, context.settings):
             return None
         return CollectedJob(
@@ -57,4 +59,3 @@ class ATSBoardCollector(ABC):
             employment_type=employment_type,
             metadata=metadata or {},
         )
-

@@ -37,3 +37,32 @@ def test_batch_deduper_merges_duplicate_jobs():
     assert len(result.unique_jobs) == 1
     assert "greenhouse:Figma" in result.unique_jobs[0].metadata["seen_in_sources"]
 
+
+def test_batch_deduper_normalizes_ats_application_suffixes():
+    job_a = normalize_job(
+        CollectedJob(
+            source_name="repo_a",
+            source_type=SourceType.STRUCTURED,
+            source_url="a.json",
+            apply_url="https://jobs.ashbyhq.com/netic/job-123/application?embed=true",
+            company_name="Cybernetic Labs",
+            title="Software Engineer New Grad",
+            location_text="San Francisco, CA",
+        )
+    )
+    job_b = normalize_job(
+        CollectedJob(
+            source_name="repo_b",
+            source_type=SourceType.STRUCTURED,
+            source_url="b.md",
+            apply_url="https://jobs.ashbyhq.com/netic/job-123",
+            company_name="Netic",
+            title="Software Engineer - New Grad",
+            location_text="SF",
+        )
+    )
+
+    result = BatchDeduper().dedupe([job_a, job_b])
+
+    assert result.duplicate_count == 1
+    assert len(result.unique_jobs) == 1

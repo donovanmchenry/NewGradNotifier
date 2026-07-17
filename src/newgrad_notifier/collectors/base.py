@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from newgrad_notifier.config.settings import AppSettings
-from newgrad_notifier.contracts import CollectedJob
+from newgrad_notifier.contracts import CollectedJob, PipelineError
 from newgrad_notifier.utils.http import CachedHttpClient
 
 
@@ -24,8 +24,8 @@ class Collector(ABC):
     """Base collector contract."""
 
     name: str
+    errors: list[PipelineError]
 
     @abstractmethod
     def collect(self, context: CollectorContext) -> list[CollectedJob]:
         """Collect jobs from a source."""
-

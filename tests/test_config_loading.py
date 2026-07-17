@@ -44,6 +44,16 @@ def test_config_loading_supports_openai_fallback_models(monkeypatch):
     assert settings.llm.fallback_models == ["gpt-4.1-mini", "gpt-4o-mini"]
 
 
+def test_openai_can_be_explicitly_disabled_even_when_a_key_exists(monkeypatch):
+    monkeypatch.setenv("EMAIL_PROVIDER", "console")
+    monkeypatch.setenv("OPENAI_API_KEY", "openai-test-key")
+    monkeypatch.setenv("OPENAI_ENABLED", "false")
+
+    settings = load_settings("config/production.toml")
+
+    assert settings.llm.enabled is False
+
+
 def test_smtp_validation_fails_without_password(monkeypatch):
     monkeypatch.setenv("EMAIL_PROVIDER", "smtp")
     monkeypatch.setenv("EMAIL_RECIPIENT", "dzmchenry@gmail.com")

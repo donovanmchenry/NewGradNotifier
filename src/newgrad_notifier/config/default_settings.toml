@@ -39,10 +39,14 @@ immediate_alert_threshold = 92
 digest_min_fit = 65
 top_priority_fit = 78
 high_signal_fit = 65
+max_digest_jobs = 10
 
 [collection]
-max_jobs_per_source = 250
+max_jobs_per_source = 500
 max_company_pages_per_run = 75
+max_description_fetches_per_run = 30
+min_description_characters = 160
+max_job_age_days = 45
 min_domain_interval_seconds = 1.0
 request_timeout_seconds = 20
 cache_ttl_seconds = 21600
@@ -168,6 +172,11 @@ location_key = "location"
 posted_at_key = "posted_at"
 description_key = "description"
 job_id_key = "job_id"
+
+[[markdown_feeds]]
+name = "sample_markdown_feed"
+url = ""
+max_age_days = 45
 
 [[ats_boards]]
 company_name = "Example Company"

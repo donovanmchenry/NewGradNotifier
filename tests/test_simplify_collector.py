@@ -1,7 +1,8 @@
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from newgrad_notifier.collectors.base import CollectorContext
-from newgrad_notifier.collectors.simplify import SimplifyCollector
+from newgrad_notifier.collectors.simplify import SimplifyCollector, _is_recent
 from newgrad_notifier.config.settings import load_settings
 from newgrad_notifier.utils.http import CachedHttpClient
 
@@ -20,3 +21,10 @@ def test_simplify_collector_filters_relevant_jobs(tmp_path):
     assert "Site Reliability Engineer, New Grad" not in titles
     http_client.close()
 
+
+def test_is_recent_supports_unix_timestamps():
+    recent = (datetime.now(UTC) - timedelta(days=2)).timestamp()
+    stale = (datetime.now(UTC) - timedelta(days=60)).timestamp()
+
+    assert _is_recent(recent, max_age_days=45)
+    assert not _is_recent(stale, max_age_days=45)

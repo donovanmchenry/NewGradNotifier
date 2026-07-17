@@ -107,25 +107,41 @@ def render_daily_digest(
     errors: list[PipelineError],
     high_signal_threshold: int,
     top_priority_threshold: int,
+    digest_min_fit: int = 0,
+    max_digest_jobs: int = 10,
 ) -> RenderedEmail:
     """Return the rendered daily digest."""
 
-    sorted_jobs = sorted(ranked_jobs, key=lambda item: (item.ranking.fit_score, -item.ranking.difficulty_score), reverse=True)
+    eligible_jobs = [
+        job
+        for job in ranked_jobs
+        if job.lifecycle_state in {JobLifecycleState.NEW, JobLifecycleState.REOPENED}
+        and job.ranking.fit_score >= digest_min_fit
+        and job.ranking.recommendation != Recommendation.SKIP
+    ]
+    sorted_jobs = sorted(
+        eligible_jobs,
+        key=lambda item: (item.ranking.fit_score, -item.ranking.difficulty_score),
+        reverse=True,
+    )[:max_digest_jobs]
     top_matches = [job for job in sorted_jobs if job.ranking.fit_score >= top_priority_threshold]
     reach_roles = [
         job for job in sorted_jobs
         if high_signal_threshold <= job.ranking.fit_score < top_priority_threshold
     ]
-    lower_priority = [job for job in sorted_jobs if job.ranking.fit_score < high_signal_threshold]
+    lower_priority = [job for job in sorted_jobs if digest_min_fit <= job.ranking.fit_score < high_signal_threshold]
     total_high_signal = len(top_matches) + len(reach_roles)
-    subject = f"[NewGradNotifier] {run_date.date().isoformat()} - {total_high_signal} high-signal new roles"
+    subject = (
+        f"[NewGradNotifier] {run_date.date().isoformat()} - "
+        f"{len(sorted_jobs)} new match{'es' if len(sorted_jobs) != 1 else ''}, {total_high_signal} high-signal"
+    )
 
     text_sections = [
         f"Daily New Grad SWE Digest -- {run_date.date().isoformat()}",
         "",
         *_render_text_section("Section 1: Top new matches today", top_matches, run_date),
         *_render_text_section("Section 2: Reach roles worth applying to", reach_roles, run_date),
-        *_render_text_section("Section 3: Lower-priority or mismatched roles", lower_priority, run_date),
+        *_render_text_section("Section 3: Other new matches", lower_priority, run_date),
         "Section 4: Summary stats by source",
         *(["(none)"] if not stats.source_counts else [f"- {source}: {count}" for source, count in sorted(stats.source_counts.items())]),
         "",
@@ -145,7 +161,7 @@ def render_daily_digest(
     html_sections = "\n".join([
         _render_html_section("Top new matches today", top_matches, run_date),
         _render_html_section("Reach roles worth applying to", reach_roles, run_date),
-        _render_html_section("Lower-priority or mismatched roles", lower_priority, run_date),
+        _render_html_section("Other new matches", lower_priority, run_date),
     ])
 
     html_body = f"""<!doctype html>
@@ -185,7 +201,8 @@ def render_daily_digest(
 
 def should_send_immediate_alert(job: RankedJob, threshold: int) -> bool:
     """Return True when a job qualifies for immediate alerting."""
-    return job.ranking.fit_score >= threshold and job.ranking.recommendation in {
-        Recommendation.APPLY_NOW,
-        Recommendation.APPLY_IF_INTERESTED,
-    }
+    return (
+        job.lifecycle_state in {JobLifecycleState.NEW, JobLifecycleState.REOPENED}
+        and job.ranking.fit_score >= threshold
+        and job.ranking.recommendation in {Recommendation.APPLY_NOW, Recommendation.APPLY_IF_INTERESTED}
+    )

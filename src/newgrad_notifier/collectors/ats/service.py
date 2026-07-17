@@ -12,7 +12,7 @@ from newgrad_notifier.collectors.ats.smartrecruiters import SmartRecruitersColle
 from newgrad_notifier.collectors.ats.workday import WorkdayCollector
 from newgrad_notifier.collectors.base import Collector, CollectorContext
 from newgrad_notifier.config.settings import ATSBoardConfig
-from newgrad_notifier.contracts import CollectedJob
+from newgrad_notifier.contracts import CollectedJob, PipelineError
 
 
 class ATSCollectorService(Collector):
@@ -30,9 +30,11 @@ class ATSCollectorService(Collector):
             "workday": WorkdayCollector(),
         }
         self.logger = logging.getLogger(__name__)
+        self.errors: list[PipelineError] = []
 
     def collect(self, context: CollectorContext) -> list[CollectedJob]:
         jobs: list[CollectedJob] = []
+        self.errors = []
         for board in self.boards:
             collector = self.platform_collectors.get(board.platform.lower())
             if collector is None:
@@ -41,9 +43,16 @@ class ATSCollectorService(Collector):
             try:
                 jobs.extend(collector.collect_board(board, context))
             except Exception as exc:
+                self.errors.append(
+                    PipelineError(
+                        source_name=f"{board.platform}:{board.company_name}",
+                        stage="collect",
+                        message="ATS board failed",
+                        detail=str(exc),
+                    )
+                )
                 self.logger.warning(
                     "Discovered ATS board failed",
                     extra={"context": {"company": board.company_name, "platform": board.platform, "identifier": board.identifier, "error": str(exc)}},
                 )
         return jobs[: context.settings.collection.max_jobs_per_source]
-

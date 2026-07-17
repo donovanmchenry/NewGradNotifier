@@ -24,6 +24,7 @@ ROLE_HINTS = (
 EARLY_CAREER_HINTS = (
     "new grad",
     "new graduate",
+    "new college grad",
     "recent graduate",
     "university graduate",
     "early career",
@@ -40,6 +41,7 @@ ENTRY_LEVEL_TITLE_HINTS = (
     "associate software engineer",
     "new grad",
     "new graduate",
+    "new college grad",
     "recent graduate",
     "university graduate",
     "early career",
@@ -212,6 +214,14 @@ def _normalize_hint_text(text: str) -> str:
     return text.lower().replace("-", " ").replace("_", " ").strip()
 
 
+def cohort_allowed(text: str, settings: AppSettings) -> bool:
+    """Reject listings explicitly tied only to a different graduation cohort."""
+
+    years = set(re.findall(r"\b20\d{2}\b", text.lower().replace("-", " ").replace("_", " ")))
+    target_year = str(settings.candidate_profile.graduation_year)
+    return not years or target_year in years
+
+
 def _has_us_signal(location_text: str) -> bool:
     lowered = _normalize_hint_text(location_text)
     if _contains_any(lowered, US_LOCATION_HINTS) or _contains_any(lowered, US_STATE_NAMES):
@@ -230,6 +240,8 @@ def is_relevant_role(title: str, description: str, settings: AppSettings, source
     """Return True when the role resembles an entry-level SWE role."""
 
     title_lower = title.lower()
+    if not cohort_allowed(title, settings):
+        return False
     haystack = f"{title} {description}".lower()
     source_context_lower = _normalize_hint_text(source_context)
     if _contains_any(haystack, EXCLUSION_HINTS):

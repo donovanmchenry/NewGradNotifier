@@ -52,9 +52,18 @@ class Repository:
 
     def complete_run(self, run: DailyRun, stats: DigestStats, errors: Sequence[PipelineError]) -> None:
         run.completed_at = utc_now()
-        run.status = RunStatus.COMPLETED.value if not errors else RunStatus.FAILED.value
+        run.status = RunStatus.COMPLETED.value
         run.stats_json = stats.model_dump()
         run.errors_json = [error.model_dump() for error in errors]
+        self.session.add(run)
+        self.session.commit()
+
+    def fail_run(self, run: DailyRun, error: PipelineError) -> None:
+        """Mark a run as fatally failed while preserving diagnostic context."""
+
+        run.completed_at = utc_now()
+        run.status = RunStatus.FAILED.value
+        run.errors_json = [error.model_dump()]
         self.session.add(run)
         self.session.commit()
 

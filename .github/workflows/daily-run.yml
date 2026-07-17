@@ -43,22 +43,21 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Gate scheduled trigger to 8 AM local time
+      - name: Restore previous SQLite state
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python scripts/restore_sqlite_from_artifact.py
+
+      - name: Gate duplicate or early scheduled triggers
         id: schedule_gate
         if: github.event_name == 'schedule'
         continue-on-error: true
         run: python scripts/should_run_schedule.py
 
-      - name: Stop outside the local execution window
+      - name: Stop when today's pipeline already ran or the trigger is early
         if: github.event_name == 'schedule' && steps.schedule_gate.outcome != 'success'
-        run: echo "Skipping this UTC trigger because it is not 8:00 AM in America/New_York."
-
-      - name: Restore previous SQLite state
-        if: github.event_name != 'schedule' || steps.schedule_gate.outcome == 'success'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: python scripts/restore_sqlite_from_artifact.py
+        run: echo "Skipping this trigger; another trigger will run or today's pipeline already completed."
 
       - name: Create virtual environment
         if: github.event_name != 'schedule' || steps.schedule_gate.outcome == 'success'

@@ -1,4 +1,4 @@
-from newgrad_notifier.collectors.relevance import is_relevant_role, location_allowed
+from newgrad_notifier.collectors.relevance import cohort_allowed, is_relevant_role, location_allowed
 from newgrad_notifier.config.settings import load_settings
 
 
@@ -17,6 +17,11 @@ def test_filtering_rejects_internships_and_non_us_roles():
     assert location_allowed("SF", settings) is True
     assert location_allowed("LA", settings) is True
     assert location_allowed("Remote, United States", settings) is True
+    assert is_relevant_role("Software Engineer - New College Grad 2026", "", settings) is False
+    assert is_relevant_role("Software Engineer - New College Grad 2027", "", settings) is True
+    assert cohort_allowed(
+        "Software Engineer New Grad https://example.com/new-college-grad-2026/job", settings
+    ) is False
 
 
 def test_structured_new_grad_source_context_allows_generic_swe_titles():
