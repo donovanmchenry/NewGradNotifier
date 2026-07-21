@@ -45,3 +45,24 @@ def test_file_email_sender_writes_html_variant(tmp_path):
 
     assert (tmp_path / "Daily_Digest.txt").read_text(encoding="utf-8").endswith("plain body")
     assert "html body" in (tmp_path / "Daily_Digest.html").read_text(encoding="utf-8")
+
+
+def test_resend_sender_returns_delivery_id(monkeypatch):
+    class Response:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"id": "email_123"}
+
+    monkeypatch.setattr("newgrad_notifier.notifications.sender.requests.post", lambda *args, **kwargs: Response())
+    sender = ResendEmailSender(
+        EmailSettings(
+            provider="resend",
+            recipient="dzmchenry@gmail.com",
+            sender="NewGrad Notifier <onboarding@resend.dev>",
+            resend_api_key="re_test_123",
+        )
+    )
+
+    assert sender.send("Subject", "Body", "dzmchenry@gmail.com") == "email_123"

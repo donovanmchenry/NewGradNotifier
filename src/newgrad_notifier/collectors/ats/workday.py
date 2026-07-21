@@ -15,9 +15,11 @@ class WorkdayCollector(ATSBoardCollector):
 
     def collect_board(self, board: ATSBoardConfig, context: CollectorContext) -> list[CollectedJob]:
         if not board.api_url:
+            self.last_total_available = 0
             return []
         payload = context.http_client.get_json(board.api_url)
         jobs_payload = self._extract_jobs(payload)
+        self.last_total_available = len(jobs_payload)
         jobs: list[CollectedJob] = []
         for item in jobs_payload:
             title = item.get("title") or item.get("bulletFields", [None])[0] or ""
@@ -45,4 +47,3 @@ class WorkdayCollector(ATSBoardCollector):
         if "jobs" in payload:
             return payload["jobs"]
         return payload.get("data", [])
-

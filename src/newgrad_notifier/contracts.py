@@ -39,6 +39,7 @@ class JobLifecycleState(StrEnum):
     NEW = "new"
     SEEN = "seen"
     REOPENED = "reopened"
+    SAVED = "saved"
     APPLIED = "applied"
     IGNORED = "ignored"
 
@@ -152,4 +153,4 @@ class DigestStats(BaseModel):
     total_high_signal: int = 0
     total_errors: int = 0
     source_counts: dict[str, int] = Field(default_factory=dict)
-
+    source_health: dict[str, dict[str, Any]] = Field(default_factory=dict)

@@ -25,6 +25,7 @@ class Collector(ABC):
 
     name: str
     errors: list[PipelineError]
+    source_health: dict[str, dict[str, object]]
 
     @abstractmethod
     def collect(self, context: CollectorContext) -> list[CollectedJob]:

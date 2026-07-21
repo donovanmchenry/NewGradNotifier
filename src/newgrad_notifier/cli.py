@@ -20,6 +20,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("init-db", help="Create the configured database schema.")
     subparsers.add_parser("run-once", help="Run discovery, ranking, and digest generation once.")
     subparsers.add_parser("schedule", help="Run the APScheduler service.")
+    subparsers.add_parser("serve-tracker", help="Run the application tracking dashboard.")
     return parser
 
 
@@ -45,6 +46,11 @@ def main() -> None:
         from newgrad_notifier.scheduler.apscheduler_runner import run_scheduler
 
         run_scheduler(args.config_path)
+        return
+    if args.command == "serve-tracker":
+        from newgrad_notifier.tracking.app import run_tracking_server
+
+        run_tracking_server(args.config_path)
         return
 
 

@@ -50,6 +50,15 @@ class Repository:
         self.session.refresh(run)
         return run
 
+    def fetch_recent_completed_runs(self, limit: int = 14) -> list[DailyRun]:
+        statement = (
+            select(DailyRun)
+            .where(DailyRun.status == RunStatus.COMPLETED.value)
+            .order_by(DailyRun.started_at.desc())
+            .limit(limit)
+        )
+        return list(self.session.scalars(statement))
+
     def complete_run(self, run: DailyRun, stats: DigestStats, errors: Sequence[PipelineError]) -> None:
         run.completed_at = utc_now()
         run.status = RunStatus.COMPLETED.value
@@ -90,6 +99,38 @@ class Repository:
     def find_normalized_job(self, canonical_key: str) -> NormalizedJobRecord | None:
         statement = select(NormalizedJobRecord).where(NormalizedJobRecord.canonical_key == canonical_key)
         return self.session.scalar(statement)
+
+    def list_tracked_jobs(self, limit: int = 100) -> list[NormalizedJobRecord]:
+        statement = select(NormalizedJobRecord).order_by(NormalizedJobRecord.last_seen_at.desc()).limit(limit)
+        return list(self.session.scalars(statement))
+
+    def build_feedback_signals(self):
+        from newgrad_notifier.ranking.feedback import FeedbackSignals
+
+        signals = FeedbackSignals()
+        user_states = [
+            JobLifecycleState.SAVED.value,
+            JobLifecycleState.APPLIED.value,
+            JobLifecycleState.IGNORED.value,
+        ]
+        records = self.session.scalars(
+            select(NormalizedJobRecord).where(NormalizedJobRecord.current_status.in_(user_states))
+        )
+        for record in records:
+            score = self.session.scalar(
+                select(ScoringResultRecord)
+                .where(ScoringResultRecord.normalized_job_id == record.id)
+                .order_by(ScoringResultRecord.created_at.desc())
+                .limit(1)
+            )
+            signals.observe(
+                positive=record.current_status in {JobLifecycleState.SAVED.value, JobLifecycleState.APPLIED.value},
+                company_name=record.company_name,
+                tags=score.tags_json if score else [],
+                skills=score.top_matching_skills_json if score else [],
+                work_mode=record.metadata_json.get("job_details", {}).get("work_mode"),
+            )
+        return signals
 
     def upsert_normalized_job(
         self,
@@ -134,13 +175,19 @@ class Repository:
             self.session.refresh(record)
             return record, JobLifecycleState.NEW
 
+        user_managed_states = {
+            JobLifecycleState.SAVED.value,
+            JobLifecycleState.APPLIED.value,
+            JobLifecycleState.IGNORED.value,
+        }
+        user_managed = existing.current_status in user_managed_states
         lifecycle_state = JobLifecycleState.SEEN
         last_seen = existing.last_seen_at
         if last_seen.tzinfo is None:
             last_seen = last_seen.replace(tzinfo=UTC)
         was_stale = (now - last_seen) >= timedelta(days=7)
         content_changed = existing.content_hash != normalized_job.content_hash
-        if was_stale and content_changed:
+        if not user_managed and was_stale and content_changed:
             lifecycle_state = JobLifecycleState.REOPENED
             existing.reopened_count += 1
 
@@ -164,10 +211,12 @@ class Repository:
         existing.description_hash = normalized_job.description_hash
         existing.content_hash = normalized_job.content_hash
         existing.confidence = normalized_job.confidence
-        existing.current_status = lifecycle_state.value
+        if not user_managed:
+            existing.current_status = lifecycle_state.value
         existing.last_seen_at = now
         existing.metadata_json = normalized_job.metadata
-        self._track_status(existing, lifecycle_state)
+        if lifecycle_state == JobLifecycleState.REOPENED:
+            self._track_status(existing, lifecycle_state)
         self.session.add(existing)
         self.session.commit()
         self.session.refresh(existing)
@@ -216,7 +265,11 @@ class Repository:
         body_text: str,
         stats: DigestStats,
         body_html: str | None = None,
+        delivery_id: str | None = None,
     ) -> EmailDigestRecord:
+        stats_payload = stats.model_dump()
+        if delivery_id:
+            stats_payload["delivery_id"] = delivery_id
         record = EmailDigestRecord(
             run_id=run_id,
             recipient=recipient,
@@ -224,7 +277,7 @@ class Repository:
             body_text=body_text,
             body_html=body_html,
             sent_at=utc_now(),
-            stats_json=stats.model_dump(),
+            stats_json=stats_payload,
         )
         self.session.add(record)
         self.session.commit()
@@ -245,13 +298,41 @@ class Repository:
         record = self.session.get(NormalizedJobRecord, job_id)
         if record is None:
             return
+        self._set_user_status(record, state, notes)
+
+    def mark_user_status_by_key(
+        self,
+        canonical_key: str,
+        state: JobLifecycleState,
+        notes: str | None = None,
+    ) -> NormalizedJobRecord | None:
+        record = self.find_normalized_job(canonical_key)
+        if record is None:
+            return None
+        self._set_user_status(record, state, notes)
+        return record
+
+    def _set_user_status(
+        self,
+        record: NormalizedJobRecord,
+        state: JobLifecycleState,
+        notes: str | None,
+    ) -> None:
+        if state not in {JobLifecycleState.SAVED, JobLifecycleState.APPLIED, JobLifecycleState.IGNORED}:
+            raise ValueError(f"Unsupported user-managed status: {state.value}")
+        now = utc_now()
         record.current_status = state.value
+        record.application_status = state.value
+        record.application_notes = notes or record.application_notes
+        if state == JobLifecycleState.APPLIED:
+            record.applied_at = now
+            record.application_url = record.apply_url
         self.session.add(record)
         self.session.add(
             JobStatusTrackingRecord(
-                normalized_job_id=job_id,
+                normalized_job_id=record.id,
                 status=state.value,
-                changed_at=utc_now(),
+                changed_at=now,
                 notes=notes,
             )
         )

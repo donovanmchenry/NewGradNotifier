@@ -15,6 +15,7 @@ class ATSBoardCollector(ABC):
     """Platform-specific ATS collector contract."""
 
     platform: str
+    last_total_available: int = 0
 
     @abstractmethod
     def collect_board(self, board: ATSBoardConfig, context: CollectorContext) -> list[CollectedJob]:

@@ -44,6 +44,7 @@ class AshbyCollector(ATSBoardCollector):
                 },
             )
         jobs_payload = self._extract_jobs(payload)
+        self.last_total_available = len(jobs_payload)
         jobs: list[CollectedJob] = []
         for item in jobs_payload:
             job = self.build_job(
@@ -68,4 +69,3 @@ class AshbyCollector(ATSBoardCollector):
         if "jobs" in payload:
             return payload.get("jobs", [])
         return payload.get("data", {}).get("jobsBoard", {}).get("jobs", [])
-

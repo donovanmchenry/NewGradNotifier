@@ -14,7 +14,7 @@ from newgrad_notifier.collectors.base import Collector, CollectorContext
 from newgrad_notifier.collectors.parsers import extract_jobs_from_html
 from newgrad_notifier.config.company_loader import load_company_list
 from newgrad_notifier.config.settings import ATSBoardConfig
-from newgrad_notifier.contracts import CollectedJob, SourceType
+from newgrad_notifier.contracts import CollectedJob, PipelineError, SourceType
 
 ATS_DISCOVERY_PATTERNS: dict[str, re.Pattern[str]] = {
     "greenhouse": re.compile(r"https?://(?:boards|job-boards)\.greenhouse\.io/([A-Za-z0-9_-]+)", re.IGNORECASE),
@@ -31,6 +31,8 @@ class CompanyPagesCollector(Collector):
 
     def __init__(self, company_list_path: str | None = None) -> None:
         self.company_list_path = company_list_path
+        self.errors: list[PipelineError] = []
+        self.source_health: dict[str, dict[str, object]] = {}
         self.platform_collectors: dict[str, ATSBoardCollector] = {
             "ashby": AshbyCollector(),
             "greenhouse": GreenhouseCollector(),
@@ -86,9 +88,30 @@ class CompanyPagesCollector(Collector):
             collector = self.platform_collectors.get(board.platform.lower())
             if collector is None:
                 continue
+            health_key = f"discovered:{board.platform.lower()}:{company['name']}"
             try:
-                jobs.extend(collector.collect_board(board, context))
+                board_jobs = collector.collect_board(board, context)
+                jobs.extend(board_jobs)
+                self.source_health[health_key] = {
+                    "status": "healthy",
+                    "total_available": collector.last_total_available,
+                    "relevant_jobs": len(board_jobs),
+                }
             except Exception as exc:  # pragma: no cover - network/provider failures
+                self.source_health[health_key] = {
+                    "status": "failed",
+                    "total_available": None,
+                    "relevant_jobs": 0,
+                    "error": str(exc),
+                }
+                self.errors.append(
+                    PipelineError(
+                        source_name=health_key,
+                        stage="collect",
+                        message="Discovered ATS board failed",
+                        detail=str(exc),
+                    )
+                )
                 context.logger.warning(
                     "Discovered ATS board failed",
                     extra={
@@ -104,15 +127,32 @@ class CompanyPagesCollector(Collector):
 
     def collect(self, context: CollectorContext) -> list[CollectedJob]:
         jobs: list[CollectedJob] = []
+        self.errors = []
+        self.source_health = {}
         companies = self._prioritized_companies(load_company_list(self.company_list_path), context)
         for company in companies:
             source_url = company.get("careers_url") or urljoin(company["homepage"], "/careers")
+            health_key = f"company:{company['slug']}"
             try:
                 html = context.http_client.get_text(
                     source_url,
                     render_js=bool(context.settings.collection.use_playwright_for_js and company.get("js_heavy")),
                 )
             except Exception as exc:  # pragma: no cover - logging path
+                self.source_health[health_key] = {
+                    "status": "failed",
+                    "total_available": None,
+                    "relevant_jobs": 0,
+                    "error": str(exc),
+                }
+                self.errors.append(
+                    PipelineError(
+                        source_name=health_key,
+                        stage="collect",
+                        message="Company careers page failed",
+                        detail=str(exc),
+                    )
+                )
                 context.logger.warning(
                     "Failed to scan careers page",
                     extra={"context": {"company": company["name"], "error": str(exc)}},
@@ -126,16 +166,25 @@ class CompanyPagesCollector(Collector):
             )
             jobs.extend(discovered_jobs)
             if discovered_jobs:
+                self.source_health[health_key] = {
+                    "status": "healthy",
+                    "total_available": None,
+                    "relevant_jobs": len(discovered_jobs),
+                }
                 continue
-            jobs.extend(
-                extract_jobs_from_html(
-                    html=html,
-                    base_url=source_url,
-                    source_name=f"company:{company['slug']}",
-                    source_type=SourceType.COMPANY_PAGE,
-                    settings=context.settings,
-                    default_company_name=company["name"],
-                    allow_anchor_fallback=int(company.get("priority_tier", 3)) <= 1,
-                )
+            page_jobs = extract_jobs_from_html(
+                html=html,
+                base_url=source_url,
+                source_name=f"company:{company['slug']}",
+                source_type=SourceType.COMPANY_PAGE,
+                settings=context.settings,
+                default_company_name=company["name"],
+                allow_anchor_fallback=int(company.get("priority_tier", 3)) <= 1,
             )
+            jobs.extend(page_jobs)
+            self.source_health[health_key] = {
+                "status": "healthy",
+                "total_available": None,
+                "relevant_jobs": len(page_jobs),
+            }
         return jobs[: context.settings.collection.max_jobs_per_source]

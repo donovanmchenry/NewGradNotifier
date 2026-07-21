@@ -10,6 +10,7 @@ from typing import Any
 from bs4 import BeautifulSoup
 
 from newgrad_notifier.contracts import NormalizedJob
+from newgrad_notifier.normalization.job_details import extract_job_details
 from newgrad_notifier.utils.hashing import sha256_text
 from newgrad_notifier.utils.http import CachedHttpClient
 
@@ -106,6 +107,12 @@ def enrich_sparse_jobs(
         )
         metadata = dict(job.metadata)
         metadata["description_enriched"] = True
+        metadata["job_details"] = extract_job_details(
+            title=job.title,
+            description=description,
+            location=job.location_normalized,
+            is_remote=job.is_remote,
+        )
         enriched.append(
             job.model_copy(
                 update={

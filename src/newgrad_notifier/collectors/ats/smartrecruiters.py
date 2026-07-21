@@ -14,6 +14,7 @@ class SmartRecruitersCollector(ATSBoardCollector):
     def collect_board(self, board: ATSBoardConfig, context: CollectorContext) -> list[CollectedJob]:
         api_url = board.api_url or f"https://api.smartrecruiters.com/v1/companies/{board.identifier}/postings"
         payload = context.http_client.get_json(api_url)
+        self.last_total_available = len(payload.get("content", []))
         jobs: list[CollectedJob] = []
         for item in payload.get("content", []):
             location = ", ".join(
@@ -35,4 +36,3 @@ class SmartRecruitersCollector(ATSBoardCollector):
             if job:
                 jobs.append(job)
         return jobs
-

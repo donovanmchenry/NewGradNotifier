@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 
 from newgrad_notifier.collectors.base import CollectorContext
@@ -56,16 +57,19 @@ def run_pipeline_once(config_path: str | None = None) -> None:
         with session_factory() as session:
             seed_reference_data(session, settings)
             repository = Repository(session)
+            ranking_service.set_feedback_signals(repository.build_feedback_signals())
             run = repository.create_run()
             run_id = run.id
             collectors = build_collectors(settings)
             context = CollectorContext(settings=settings, http_client=http_client, logger=logger)
             collected_jobs = []
+            source_health: dict[str, dict[str, object]] = {}
             for collector in collectors:
                 try:
                     collector_jobs = collector.collect(context)
                     collected_jobs.extend(collector_jobs)
                     errors.extend(getattr(collector, "errors", []))
+                    source_health.update(getattr(collector, "source_health", {}))
                     if not collector_jobs and collector.name.startswith(("structured:", "markdown:")):
                         errors.append(
                             PipelineError(
@@ -84,6 +88,12 @@ def run_pipeline_once(config_path: str | None = None) -> None:
                             detail=str(exc),
                         )
                     )
+                    source_health[collector.name] = {
+                        "status": "failed",
+                        "total_available": None,
+                        "relevant_jobs": 0,
+                        "error": str(exc),
+                    }
             stats.total_collected = len(collected_jobs)
             stats.source_counts = {
                 source_name: sum(1 for job in collected_jobs if job.source_name == source_name)
@@ -91,6 +101,25 @@ def run_pipeline_once(config_path: str | None = None) -> None:
             }
             if stats.source_counts:
                 stats.source_counts = dict(sorted(stats.source_counts.items()))
+            stats.source_health = dict(sorted(source_health.items()))
+
+            previous_runs = repository.fetch_recent_completed_runs(limit=2)
+            for source_name, health in stats.source_health.items():
+                if health.get("status") != "healthy" or health.get("total_available") != 0:
+                    continue
+                prior_empty = all(
+                    (run.stats_json.get("source_health", {}).get(source_name, {}).get("total_available") == 0)
+                    for run in previous_runs
+                )
+                if len(previous_runs) == 2 and prior_empty:
+                    health["status"] = "stale"
+                    errors.append(
+                        PipelineError(
+                            source_name=source_name,
+                            stage="health",
+                            message="Source returned zero total listings for three consecutive runs",
+                        )
+                    )
 
             normalized_jobs = []
             raw_job_ids: dict[str, int] = {}
@@ -165,21 +194,30 @@ def run_pipeline_once(config_path: str | None = None) -> None:
                 top_priority_threshold=settings.thresholds.top_priority_fit,
                 digest_min_fit=settings.thresholds.digest_min_fit,
                 max_digest_jobs=settings.thresholds.max_digest_jobs,
+                tracking_base_url=settings.tracking.base_url if settings.tracking.enabled else "",
+                tracking_secret=settings.tracking.secret if settings.tracking.enabled else "",
             )
-            email_sender.send(
-                rendered_digest.subject,
-                rendered_digest.text_body,
-                settings.email.recipient,
-                body_html=rendered_digest.html_body,
-            )
-            repository.persist_digest(
-                run.id,
-                settings.email.recipient,
-                rendered_digest.subject,
-                rendered_digest.text_body,
-                stats,
-                body_html=rendered_digest.html_body,
-            )
+            if rendered_digest.job_count or settings.email.send_empty_digest:
+                delivery_id = email_sender.send(
+                    rendered_digest.subject,
+                    rendered_digest.text_body,
+                    settings.email.recipient,
+                    body_html=rendered_digest.html_body,
+                )
+                repository.persist_digest(
+                    run.id,
+                    settings.email.recipient,
+                    rendered_digest.subject,
+                    rendered_digest.text_body,
+                    stats,
+                    body_html=rendered_digest.html_body,
+                    delivery_id=delivery_id,
+                )
+            else:
+                logger.info(
+                    "Digest suppressed because no jobs met the configured threshold",
+                    extra={"context": {"event": "empty_digest_suppressed"}},
+                )
             repository.complete_run(run, stats, errors)
     except Exception as exc:
         if run_id is not None:
@@ -190,6 +228,15 @@ def run_pipeline_once(config_path: str | None = None) -> None:
                         failed_run,
                         PipelineError(source_name="pipeline", stage="fatal", message="Pipeline failed", detail=str(exc)),
                     )
+        if settings.email.failure_alerts_enabled and not os.getenv("GITHUB_ACTIONS"):
+            try:
+                email_sender.send(
+                    "[NewGradNotifier] Daily pipeline failed",
+                    f"The daily pipeline failed before completing.\n\nError: {exc}",
+                    settings.email.recipient,
+                )
+            except Exception:
+                logger.exception("Failure alert could not be delivered")
         raise
     finally:
         http_client.close()

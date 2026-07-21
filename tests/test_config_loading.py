@@ -65,3 +65,33 @@ def test_smtp_validation_fails_without_password(monkeypatch):
 
     with pytest.raises(SettingsValidationError):
         load_settings("config/production.toml")
+
+
+def test_tracking_requires_a_public_url_and_secret(monkeypatch):
+    monkeypatch.setenv("EMAIL_PROVIDER", "console")
+    monkeypatch.setenv("TRACKING_ENABLED", "true")
+    monkeypatch.delenv("TRACKING_BASE_URL", raising=False)
+    monkeypatch.delenv("TRACKING_SECRET", raising=False)
+
+    with pytest.raises(SettingsValidationError):
+        load_settings("config/production.toml")
+
+
+def test_postgres_database_url_is_selected(monkeypatch):
+    monkeypatch.setenv("EMAIL_PROVIDER", "console")
+    monkeypatch.setenv("DB_BACKEND", "postgres")
+    monkeypatch.setenv("DATABASE_URL", "postgresql://user:password@example.com/jobs")
+
+    settings = load_settings("config/production.toml")
+
+    assert settings.database.backend == "postgres"
+    assert settings.database.url.startswith("postgresql://")
+
+
+def test_postgres_backend_rejects_missing_database_url(monkeypatch):
+    monkeypatch.setenv("EMAIL_PROVIDER", "console")
+    monkeypatch.setenv("DB_BACKEND", "postgres")
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    with pytest.raises(SettingsValidationError, match="DATABASE_URL"):
+        load_settings("config/production.toml")

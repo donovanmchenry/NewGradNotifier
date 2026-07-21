@@ -14,11 +14,16 @@ from newgrad_notifier.db.models import Base
 def create_sqlalchemy_engine(settings: AppSettings):
     """Create an engine from configured database settings."""
 
-    if settings.database.url.startswith("sqlite:///"):
-        db_file = settings.database.url.removeprefix("sqlite:///")
+    database_url = settings.database.url
+    if database_url.startswith("postgres://"):
+        database_url = "postgresql+psycopg://" + database_url.removeprefix("postgres://")
+    elif database_url.startswith("postgresql://"):
+        database_url = "postgresql+psycopg://" + database_url.removeprefix("postgresql://")
+    if database_url.startswith("sqlite:///"):
+        db_file = database_url.removeprefix("sqlite:///")
         if db_file.startswith("./"):
             Path(db_file).parent.mkdir(parents=True, exist_ok=True)
-    return create_engine(settings.database.url, echo=settings.database.echo, future=True)
+    return create_engine(database_url, echo=settings.database.echo, future=True)
 
 
 def create_session_factory(settings: AppSettings) -> sessionmaker[Session]:
@@ -33,4 +38,3 @@ def init_db(settings: AppSettings) -> None:
 
     engine = create_sqlalchemy_engine(settings)
     Base.metadata.create_all(engine)
-

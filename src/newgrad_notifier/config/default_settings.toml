@@ -20,6 +20,17 @@ smtp_username = "dzmchenry@gmail.com"
 smtp_password = ""
 smtp_use_tls = true
 outbox_dir = "outbox"
+send_empty_digest = false
+failure_alerts_enabled = true
+
+[tracking]
+enabled = false
+base_url = ""
+secret = ""
+dashboard_username = "donovan"
+dashboard_password = ""
+host = "127.0.0.1"
+port = 8765
 
 [llm]
 provider = "openai"

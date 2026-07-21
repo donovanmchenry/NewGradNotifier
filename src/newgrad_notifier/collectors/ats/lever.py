@@ -14,6 +14,7 @@ class LeverCollector(ATSBoardCollector):
     def collect_board(self, board: ATSBoardConfig, context: CollectorContext) -> list[CollectedJob]:
         api_url = board.api_url or f"https://api.lever.co/v0/postings/{board.identifier}?mode=json"
         payload = context.http_client.get_json(api_url)
+        self.last_total_available = len(payload)
         jobs: list[CollectedJob] = []
         for item in payload:
             categories = item.get("categories", {})
@@ -35,4 +36,3 @@ class LeverCollector(ATSBoardCollector):
             if job:
                 jobs.append(job)
         return jobs
-

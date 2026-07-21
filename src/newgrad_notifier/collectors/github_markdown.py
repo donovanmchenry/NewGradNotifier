@@ -32,11 +32,13 @@ class GitHubMarkdownCollector(Collector):
     def __init__(self, feed: MarkdownFeedConfig) -> None:
         self.feed = feed
         self.name = f"markdown:{feed.name}"
+        self.source_health: dict[str, dict[str, object]] = {}
 
     def collect(self, context: CollectorContext) -> list[CollectedJob]:
         markdown = context.http_client.get_text(self.feed.url)
         jobs: list[CollectedJob] = []
         headers: dict[str, int] = {}
+        total_available = 0
 
         for raw_line in markdown.splitlines():
             line = raw_line.strip()
@@ -58,6 +60,7 @@ class GitHubMarkdownCollector(Collector):
             required = (company_index, title_index, location_index, posting_index)
             if any(index is None or index >= len(cells) for index in required):
                 continue
+            total_available += 1
 
             company = _cell_text(cells[company_index])
             title = _cell_text(cells[title_index])
@@ -102,4 +105,11 @@ class GitHubMarkdownCollector(Collector):
             if len(jobs) >= context.settings.collection.max_jobs_per_source:
                 break
 
+        self.source_health = {
+            self.feed.name: {
+                "status": "healthy",
+                "total_available": total_available,
+                "relevant_jobs": len(jobs),
+            }
+        }
         return jobs

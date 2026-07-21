@@ -61,3 +61,22 @@ def test_schedule_gate_skips_when_today_already_completed(monkeypatch, tmp_path)
     monkeypatch.delenv("SCHEDULE_START_DATE", raising=False)
 
     assert module.main() == 1
+
+
+def test_schedule_gate_supports_postgres_history(monkeypatch):
+    module = _load_schedule_module()
+
+    class FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2026, 7, 17, 10, 0, tzinfo=tz)
+
+    module.datetime = FixedDateTime
+    module._completed_rows_postgres = lambda _: [("2026-07-17T12:30:00+00:00",)]
+    monkeypatch.setenv("TIME_ZONE", "America/New_York")
+    monkeypatch.setenv("RUN_TIME_LOCAL", "08:00")
+    monkeypatch.setenv("DB_BACKEND", "postgres")
+    monkeypatch.setenv("DATABASE_URL", "postgresql://example.invalid/database")
+    monkeypatch.delenv("SCHEDULE_START_DATE", raising=False)
+
+    assert module.main() == 1

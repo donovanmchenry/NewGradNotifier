@@ -114,3 +114,35 @@ def test_company_page_collector_prioritizes_and_caps_company_scan_list(tmp_path)
 
     assert [company["name"] for company in prioritized] == ["Beta", "Alpha"]
     context.http_client.close()
+
+
+def test_company_page_collector_records_failed_source_health(monkeypatch):
+    settings = load_settings("config/local_dev.toml")
+    collector = CompanyPagesCollector()
+
+    class FailingHttpClient:
+        @staticmethod
+        def get_text(*args, **kwargs):
+            raise RuntimeError("careers site unavailable")
+
+    monkeypatch.setattr(
+        "newgrad_notifier.collectors.company_pages.collector.load_company_list",
+        lambda _path: [
+            {
+                "name": "Example",
+                "slug": "example",
+                "careers_url": "https://example.com/careers",
+                "priority_tier": 1,
+                "enabled": True,
+            }
+        ],
+    )
+    context = CollectorContext(
+        settings=settings,
+        http_client=FailingHttpClient(),
+        logger=logging.getLogger(__name__),
+    )
+
+    assert collector.collect(context) == []
+    assert collector.source_health["company:example"]["status"] == "failed"
+    assert collector.errors[0].source_name == "company:example"

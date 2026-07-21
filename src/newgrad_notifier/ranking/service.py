@@ -7,7 +7,8 @@ import logging
 from newgrad_notifier.config.company_loader import load_company_list
 from newgrad_notifier.config.settings import AppSettings
 from newgrad_notifier.contracts import NormalizedJob, RankingResult
-from newgrad_notifier.ranking.heuristics import build_heuristic_ranking
+from newgrad_notifier.ranking.feedback import FeedbackSignals
+from newgrad_notifier.ranking.heuristics import build_heuristic_ranking, recommend
 
 from newgrad_notifier.llm.base import LLMRanker
 
@@ -26,6 +27,10 @@ class RankingService:
         for company_name in settings.filters.priority_companies:
             self.company_priority[company_name.lower()] = 1
         self.llm_ranker = self._build_llm_ranker(settings)
+        self.feedback_signals = FeedbackSignals()
+
+    def set_feedback_signals(self, signals: FeedbackSignals) -> None:
+        self.feedback_signals = signals
 
     def _build_llm_ranker(self, settings: AppSettings) -> LLMRanker | None:
         if not settings.llm.enabled or settings.llm.provider != "openai" or not settings.llm.openai_api_key:
@@ -40,10 +45,29 @@ class RankingService:
 
     def _heuristic(self, job: NormalizedJob) -> RankingResult:
         company_priority = self.company_priority.get(job.company_name.lower(), 3)
-        return build_heuristic_ranking(
+        ranking = build_heuristic_ranking(
             job=job,
             profile=self.settings.candidate_profile,
             company_priority=company_priority,
+        )
+        return self._apply_feedback(job, ranking)
+
+    def _apply_feedback(self, job: NormalizedJob, ranking: RankingResult) -> RankingResult:
+        adjustment = self.feedback_signals.adjustment(job, ranking)
+        if adjustment == 0:
+            return ranking
+        fit_score = max(0, min(100, ranking.fit_score + adjustment))
+        tags = sorted(set([*ranking.tags, "feedback_adjusted"]))
+        return ranking.model_copy(
+            update={
+                "fit_score": fit_score,
+                "recommendation": recommend(
+                    fit_score,
+                    ranking.difficulty_score,
+                    f"{job.title} {job.description_text}".lower(),
+                ),
+                "tags": tags,
+            }
         )
 
     def rank(self, job: NormalizedJob) -> RankingResult:
@@ -53,7 +77,7 @@ class RankingService:
         try:
             ranking = self.llm_ranker.rank(self.settings.candidate_profile, job, heuristic)
             ranking.scorer = "llm_openai"
-            return ranking
+            return self._apply_feedback(job, ranking)
         except Exception as exc:  # pragma: no cover - network/provider failures
             self.logger.warning(
                 "Falling back to heuristic ranking",
@@ -81,7 +105,7 @@ class RankingService:
             llm_results = self.llm_ranker.rank_batch(self.settings.candidate_profile, llm_inputs)
             for idx, result in zip(llm_indices, llm_results):
                 result.scorer = "llm_openai"
-                heuristics[idx] = result
+                heuristics[idx] = self._apply_feedback(jobs[idx], result)
         except Exception as exc:  # pragma: no cover - network/provider failures
             self.logger.warning(
                 "Batch LLM ranking failed, using heuristics for all",

@@ -34,8 +34,7 @@ Production-ready daily discovery, dedupe, ranking, and email notification pipeli
 │   └── pipeline.py
 ├── tests/
 ├── .env.example
-├── pyproject.toml
-└── render.yaml
+└── pyproject.toml
 ```
 
 ## What This Repo Does
@@ -56,6 +55,10 @@ Production-ready daily discovery, dedupe, ranking, and email notification pipeli
   - immediate alerts for very high-fit new roles at `fit_score >= 92`
 - Enriches a bounded set of sparse listings from their direct application pages
 - Avoids rescoring or re-emailing jobs that were already seen
+- Extracts salary, work mode, sponsorship, citizenship/clearance, graduation year, and application deadlines
+- Tracks per-source health, including failed and repeatedly empty ATS boards
+- Includes an optional local tracking dashboard and feedback learner, disabled in the free production deployment
+- Suppresses empty digests and sends an independent failure alert when a run breaks
 
 ## Local Setup
 
@@ -97,9 +100,15 @@ newgrad-notifier --config config/production.toml run-once
 pytest
 ```
 
+7. Run the local application tracker when tracking is configured.
+
+```bash
+newgrad-notifier --config config/production.toml serve-tracker
+```
+
 ## Environment Variables
 
-These are the production env var names expected by the app:
+These are the environment variable names supported by the app. The free GitHub workflow uses the email, OpenAI, scheduling, and SQLite values; PostgreSQL and tracking values remain optional and disabled.
 
 - `EMAIL_RECIPIENT`
 - `EMAIL_SENDER`
@@ -121,8 +130,17 @@ These are the production env var names expected by the app:
 - `OPENAI_FALLBACK_MODELS`
 - `RUN_TIME_LOCAL`
 - `TIME_ZONE`
+- `SEND_EMPTY_DIGEST` (defaults to `false`)
+- `FAILURE_ALERTS_ENABLED`
+- `TRACKING_ENABLED`
+- `TRACKING_BASE_URL`
+- `TRACKING_SECRET`
+- `TRACKING_DASHBOARD_USERNAME`
+- `TRACKING_DASHBOARD_PASSWORD`
+- `TRACKING_HOST`
+- `TRACKING_PORT`
 
-GitHub Actions currently pins the OpenAI workflow models directly in the workflow file so stale repository variables cannot override production runs.
+The free production workflow pins SQLite and disables hosted tracking so it cannot provision or depend on paid infrastructure.
 
 See [`.env.example`](.env.example) for the exact quick-start template.
 
@@ -181,6 +199,8 @@ What it does:
 - runs tests
 - runs the production pipeline
 - uploads the updated SQLite DB as a GitHub Actions artifact for the next run
+- sends an independent Resend failure alert if the workflow fails
+- uses only GitHub Actions and its persisted SQLite artifact; no Render services are provisioned
 
 ### GitHub Actions secrets to add
 
@@ -202,12 +222,13 @@ You can set these as repository variables, though the workflow already includes 
 - `SMTP_TLS`
 - `IMMEDIATE_ALERTS_ENABLED`
 - `IMMEDIATE_ALERT_THRESHOLD`
-- `DB_BACKEND`
-- `SQLITE_PATH`
 - `OPENAI_MODEL`
 - `OPENAI_ENABLED`
 - `RUN_TIME_LOCAL`
 - `TIME_ZONE`
+- `SCHEDULE_ENABLED` (`false` disables scheduled runs but keeps manual dispatch available)
+- `SEND_EMPTY_DIGEST`
+- `FAILURE_ALERTS_ENABLED`
 
 ## SQLite Default and Schema Setup
 
@@ -217,44 +238,27 @@ SQLite is the default working backend:
 - created automatically if missing
 - schema created via `newgrad-notifier --config config/production.toml init-db`
 
-The SQLAlchemy layer is already shaped so you can switch to PostgreSQL later without changing the application architecture.
+The production workflow deliberately locks this to SQLite and restores the latest database artifact on every run. PostgreSQL support remains in the application for a possible future migration, but it is not enabled or provisioned.
 
-## How To Later Switch To Render Postgres
+## Optional Local Application Tracking
 
-When you are ready to move off SQLite:
+Tracking links are disabled in the free production workflow. The dashboard can still be tested locally without purchasing hosting.
 
-1. Provision a Render Postgres database.
-2. Set:
+Required settings:
 
 ```text
-DB_BACKEND=postgres
-DATABASE_URL=postgresql+psycopg://...
+TRACKING_ENABLED=true
+TRACKING_BASE_URL=https://your-tracker.example.com
+TRACKING_SECRET=<random secret shared by the tracker and daily runner>
+TRACKING_DASHBOARD_USERNAME=donovan
+TRACKING_DASHBOARD_PASSWORD=<strong password>
 ```
 
-3. Keep the same app code and command:
+When deliberately enabled against a reachable deployment, email includes Save, Mark applied, and Not interested links. Links open a confirmation page instead of changing state immediately, which protects against automated email link scanners.
 
-```bash
-python -m newgrad_notifier.cli --config config/production.toml run-once
-```
+After at least three decisions, ranking receives a bounded adjustment of at most ten points based on companies, role tags, matching skills, and work mode. The original heuristic and OpenAI scoring remain the primary signals.
 
-No major refactor should be needed because the database access already goes through SQLAlchemy.
-
-## How To Connect The Repo To Render Later
-
-This repo includes a starter [render.yaml](render.yaml) blueprint.
-
-Typical next steps:
-
-1. Push the repo to GitHub.
-2. In Render, create a new Blueprint or Cron Job from the repo.
-3. Point Render at `render.yaml`.
-4. Add environment variables:
-   - Resend settings
-   - `OPENAI_API_KEY`
-   - later `DATABASE_URL` from Render Postgres
-5. Deploy and verify the first run from Render logs.
-
-For long-term production, Render Postgres is the better persistence option than SQLite-on-runner.
+The dashboard root uses HTTP Basic authentication. Individual email links use an HMAC signature and expose only the referenced job. No hosted dashboard, database, or cron service is included in the free deployment.
 
 ## Local Fixture Mode
 

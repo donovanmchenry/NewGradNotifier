@@ -35,6 +35,18 @@ class EmailSettings(BaseModel):
     smtp_password: str = ""
     smtp_use_tls: bool = True
     outbox_dir: str = "outbox"
+    send_empty_digest: bool = False
+    failure_alerts_enabled: bool = True
+
+
+class TrackingSettings(BaseModel):
+    enabled: bool = False
+    base_url: str = ""
+    secret: str = ""
+    dashboard_username: str = "donovan"
+    dashboard_password: str = ""
+    host: str = "127.0.0.1"
+    port: int = 8765
 
 
 class LLMSettings(BaseModel):
@@ -150,6 +162,7 @@ class AppSettings(BaseModel):
     cache_dir: str = ".cache/newgrad-notifier"
     database: DatabaseSettings
     email: EmailSettings
+    tracking: TrackingSettings = Field(default_factory=TrackingSettings)
     llm: LLMSettings
     schedule: ScheduleSettings
     thresholds: ThresholdSettings
@@ -192,6 +205,15 @@ def _apply_environment_overrides(payload: dict[str, Any]) -> dict[str, Any]:
         "EMAIL_FROM": ("email", "sender"),
         "EMAIL_PROVIDER": ("email", "provider"),
         "EMAIL_MODE": ("email", "provider"),
+        "SEND_EMPTY_DIGEST": ("email", "send_empty_digest"),
+        "FAILURE_ALERTS_ENABLED": ("email", "failure_alerts_enabled"),
+        "TRACKING_ENABLED": ("tracking", "enabled"),
+        "TRACKING_BASE_URL": ("tracking", "base_url"),
+        "TRACKING_SECRET": ("tracking", "secret"),
+        "TRACKING_DASHBOARD_USERNAME": ("tracking", "dashboard_username"),
+        "TRACKING_DASHBOARD_PASSWORD": ("tracking", "dashboard_password"),
+        "TRACKING_HOST": ("tracking", "host"),
+        "TRACKING_PORT": ("tracking", "port"),
         "IMMEDIATE_ALERTS_ENABLED": ("schedule", "immediate_alerts_enabled"),
         "IMMEDIATE_ALERT_THRESHOLD": ("schedule", "immediate_alert_threshold"),
         "RUN_TIME_LOCAL": ("schedule", "run_time_local"),
@@ -205,9 +227,15 @@ def _apply_environment_overrides(payload: dict[str, Any]) -> dict[str, Any]:
         cursor: dict[str, Any] = merged
         for part in path_parts[:-1]:
             cursor = cursor.setdefault(part, {})
-        if path_parts[-1] in {"smtp_port", "immediate_alert_threshold"}:
+        if path_parts[-1] in {"smtp_port", "immediate_alert_threshold", "port"}:
             cursor[path_parts[-1]] = int(value)
-        elif path_parts[-1] in {"smtp_use_tls", "immediate_alerts_enabled", "enabled"}:
+        elif path_parts[-1] in {
+            "smtp_use_tls",
+            "immediate_alerts_enabled",
+            "enabled",
+            "send_empty_digest",
+            "failure_alerts_enabled",
+        }:
             cursor[path_parts[-1]] = value.lower() in {"1", "true", "yes"}
         elif path_parts[-1] == "fallback_models":
             cursor[path_parts[-1]] = [item.strip() for item in value.split(",") if item.strip()]
@@ -219,23 +247,22 @@ def _apply_environment_overrides(payload: dict[str, Any]) -> dict[str, Any]:
 def _derive_database_url(settings: AppSettings) -> None:
     sqlite_path_override = os.getenv("SQLITE_PATH")
     database_url = settings.database.url.strip()
-    if database_url:
-        if database_url.startswith("sqlite:///"):
-            settings.database.backend = "sqlite"
-            settings.database.sqlite_path = database_url.removeprefix("sqlite:///")
-        elif database_url.startswith(("postgresql://", "postgresql+psycopg://", "postgres://")):
-            settings.database.backend = "postgres"
-
-    if settings.database.backend == "sqlite":
-        sqlite_path = (sqlite_path_override or settings.database.sqlite_path).strip() or "./data/newgradnotifier.db"
-        settings.database.sqlite_path = sqlite_path
-        settings.database.url = f"sqlite:///{sqlite_path}"
+    if database_url.startswith(("postgresql://", "postgresql+psycopg://", "postgres://")):
+        settings.database.backend = "postgres"
         return
 
-    if not settings.database.url:
+    if settings.database.backend == "postgres":
         raise SettingsValidationError(
-            "PostgreSQL is selected but DATABASE_URL is missing. Set DATABASE_URL to a valid postgres connection string."
+            "PostgreSQL is selected but DATABASE_URL is missing or invalid. "
+            "Set DATABASE_URL to a postgres:// or postgresql:// connection string."
         )
+
+    if settings.database.backend != "sqlite":
+        raise SettingsValidationError("DB_BACKEND must be either 'sqlite' or 'postgres'.")
+
+    sqlite_path = (sqlite_path_override or settings.database.sqlite_path).strip() or "./data/newgradnotifier.db"
+    settings.database.sqlite_path = sqlite_path
+    settings.database.url = f"sqlite:///{sqlite_path}"
 
 
 def _derive_schedule(settings: AppSettings) -> None:
@@ -248,6 +275,15 @@ def _derive_schedule(settings: AppSettings) -> None:
     if hour not in range(24) or minute not in range(60):
         raise SettingsValidationError("RUN_TIME_LOCAL must use a valid 24-hour time.")
     settings.schedule.cron = f"{minute} {hour} * * *"
+
+
+def _derive_tracking(settings: AppSettings) -> None:
+    if os.getenv("PORT"):
+        settings.tracking.port = int(os.environ["PORT"])
+    if os.getenv("RENDER"):
+        settings.tracking.host = "0.0.0.0"
+    if settings.tracking.enabled and not settings.tracking.base_url:
+        settings.tracking.base_url = os.getenv("RENDER_EXTERNAL_HOSTNAME", "")
 
 
 def _validate_required_settings(settings: AppSettings) -> None:
@@ -291,6 +327,12 @@ def _validate_required_settings(settings: AppSettings) -> None:
         )
         settings.llm.enabled = False
 
+    if settings.tracking.enabled and (not settings.tracking.base_url or not settings.tracking.secret):
+        raise SettingsValidationError(
+            "Tracking is enabled but TRACKING_BASE_URL or TRACKING_SECRET is missing. "
+            "Set both values before enabling email tracking actions."
+        )
+
 
 def load_settings(config_path: str | Path | None = None) -> AppSettings:
     """Load packaged defaults, merge optional overrides, and apply env secrets."""
@@ -305,5 +347,6 @@ def load_settings(config_path: str | Path | None = None) -> AppSettings:
     settings = AppSettings.model_validate(merged)
     _derive_database_url(settings)
     _derive_schedule(settings)
+    _derive_tracking(settings)
     _validate_required_settings(settings)
     return settings

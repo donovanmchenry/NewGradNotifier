@@ -17,5 +17,7 @@ def test_ats_collectors_cover_major_platforms(tmp_path):
     companies = {job.company_name for job in jobs}
     assert {"Figma", "Plaid", "OpenAI", "Tesla", "Hewlett Packard Enterprise"} <= companies
     assert all("Analyst" not in job.title for job in jobs)
+    assert len(collector.source_health) == len(settings.ats_boards)
+    assert all(item["status"] == "healthy" for item in collector.source_health.values())
+    assert all(item["total_available"] >= item["relevant_jobs"] for item in collector.source_health.values())
     http_client.close()
-

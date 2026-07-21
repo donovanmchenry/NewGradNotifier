@@ -9,6 +9,35 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 
+def _completed_rows_sqlite(sqlite_path: Path) -> list[tuple[str]]:
+    if not sqlite_path.exists():
+        return []
+    with sqlite3.connect(f"file:{sqlite_path}?mode=ro", uri=True) as connection:
+        table_exists = connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='daily_runs'"
+        ).fetchone()
+        if not table_exists:
+            return []
+        return connection.execute(
+            "SELECT started_at FROM daily_runs WHERE status = 'completed' ORDER BY started_at DESC LIMIT 5"
+        ).fetchall()
+
+
+def _completed_rows_postgres(database_url: str) -> list[tuple[str]]:
+    from sqlalchemy import create_engine, text
+
+    if database_url.startswith("postgres://"):
+        database_url = "postgresql+psycopg://" + database_url.removeprefix("postgres://")
+    elif database_url.startswith("postgresql://"):
+        database_url = "postgresql+psycopg://" + database_url.removeprefix("postgresql://")
+    engine = create_engine(database_url)
+    with engine.connect() as connection:
+        rows = connection.execute(
+            text("SELECT started_at FROM daily_runs WHERE status = 'completed' ORDER BY started_at DESC LIMIT 5")
+        )
+        return [(row[0].isoformat() if hasattr(row[0], "isoformat") else str(row[0]),) for row in rows]
+
+
 def main() -> int:
     timezone_name = os.getenv("TIME_ZONE", "America/New_York")
     run_time_local = os.getenv("RUN_TIME_LOCAL", "08:00")
@@ -27,23 +56,21 @@ def main() -> int:
         print("The first UTC trigger arrived before the configured local run time; waiting for the next trigger.")
         return 1
 
-    sqlite_path = Path(os.getenv("SQLITE_PATH", "./data/newgradnotifier.db"))
-    if not sqlite_path.exists():
-        print("No persisted run history exists; the pipeline should run.")
+    try:
+        if os.getenv("DB_BACKEND", "sqlite").lower() == "postgres":
+            database_url = os.getenv("DATABASE_URL", "")
+            if not database_url:
+                print("PostgreSQL is selected but DATABASE_URL is missing; allowing the pipeline to expose the error.")
+                return 0
+            rows = _completed_rows_postgres(database_url)
+        else:
+            rows = _completed_rows_sqlite(Path(os.getenv("SQLITE_PATH", "./data/newgradnotifier.db")))
+    except Exception as exc:
+        print(f"Unable to inspect run history ({exc}); allowing the pipeline to run.")
         return 0
 
-    try:
-        with sqlite3.connect(f"file:{sqlite_path}?mode=ro", uri=True) as connection:
-            table_exists = connection.execute(
-                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='daily_runs'"
-            ).fetchone()
-            if not table_exists:
-                return 0
-            rows = connection.execute(
-                "SELECT started_at FROM daily_runs WHERE status = 'completed' ORDER BY started_at DESC LIMIT 5"
-            ).fetchall()
-    except sqlite3.Error as exc:
-        print(f"Unable to inspect run history ({exc}); allowing the pipeline to run.")
+    if not rows:
+        print("No persisted run history exists; the pipeline should run.")
         return 0
 
     for (started_at_text,) in rows:

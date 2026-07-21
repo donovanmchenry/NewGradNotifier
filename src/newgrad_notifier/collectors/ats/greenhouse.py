@@ -14,6 +14,7 @@ class GreenhouseCollector(ATSBoardCollector):
     def collect_board(self, board: ATSBoardConfig, context: CollectorContext) -> list[CollectedJob]:
         api_url = board.api_url or f"https://boards-api.greenhouse.io/v1/boards/{board.identifier}/jobs?content=true"
         payload = context.http_client.get_json(api_url)
+        self.last_total_available = len(payload.get("jobs", []))
         jobs: list[CollectedJob] = []
         for item in payload.get("jobs", []):
             job = self.build_job(
@@ -32,4 +33,3 @@ class GreenhouseCollector(ATSBoardCollector):
             if job:
                 jobs.append(job)
         return jobs
-

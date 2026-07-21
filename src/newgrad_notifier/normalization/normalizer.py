@@ -8,6 +8,7 @@ from datetime import datetime
 from dateutil import parser as date_parser
 
 from newgrad_notifier.contracts import CollectedJob, NormalizedJob
+from newgrad_notifier.normalization.job_details import extract_job_details
 from newgrad_notifier.utils.hashing import sha256_text
 from newgrad_notifier.utils.time import utc_now
 
@@ -84,6 +85,12 @@ def normalize_job(job: CollectedJob) -> NormalizedJob:
     metadata = dict(job.metadata)
     metadata["normalized_at"] = utc_now().isoformat()
     metadata["description_hash"] = description_hash
+    metadata["job_details"] = extract_job_details(
+        title=job.title,
+        description=description_text,
+        location=normalized_location,
+        is_remote=is_remote,
+    )
     return NormalizedJob(
         canonical_key=build_canonical_key(job, description_hash),
         source_name=job.source_name,

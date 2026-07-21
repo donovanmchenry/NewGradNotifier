@@ -66,26 +66,38 @@ class SimplifyCollector(Collector):
     def __init__(self, feeds: list[StructuredFeedConfig]) -> None:
         self.feeds = [feed for feed in feeds if feed.url]
         self.name = f"structured:{self.feeds[0].name}" if len(self.feeds) == 1 else "structured_feeds"
+        self.source_health: dict[str, dict[str, object]] = {}
+        self._last_total_available = 0
 
     def collect(self, context: CollectorContext) -> list[CollectedJob]:
         jobs: list[CollectedJob] = []
+        self.source_health = {}
         for feed in self.feeds:
             if feed.format == "csv":
-                jobs.extend(self._collect_csv(feed, context))
+                feed_jobs = self._collect_csv(feed, context)
             else:
-                jobs.extend(self._collect_json(feed, context))
+                feed_jobs = self._collect_json(feed, context)
+            jobs.extend(feed_jobs)
+            self.source_health[feed.name] = {
+                "status": "healthy",
+                "total_available": self._last_total_available,
+                "relevant_jobs": len(feed_jobs),
+            }
         return jobs[: context.settings.collection.max_jobs_per_source]
 
     def _collect_csv(self, feed: StructuredFeedConfig, context: CollectorContext) -> list[CollectedJob]:
         content = context.http_client.get_text(feed.url)
         rows = list(csv.DictReader(io.StringIO(content)))
+        self._last_total_available = len(rows)
         return self._map_rows(feed, rows, context)
 
     def _collect_json(self, feed: StructuredFeedConfig, context: CollectorContext) -> list[CollectedJob]:
         payload = context.http_client.get_json(feed.url)
         rows = _extract_path(payload, feed.job_path)
         if not isinstance(rows, list):
+            self._last_total_available = 0
             return []
+        self._last_total_available = len(rows)
         return self._map_rows(feed, rows, context)
 
     def _map_rows(

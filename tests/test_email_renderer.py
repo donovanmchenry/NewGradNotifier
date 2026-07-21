@@ -30,6 +30,17 @@ def test_email_renderer_outputs_required_sections():
             description_text="Build with React and TypeScript.",
             description_hash="hash1",
             content_hash="hash2",
+            metadata={
+                "job_details": {
+                    "salary": "$120,000 - $140,000",
+                    "work_mode": "Remote",
+                    "sponsorship": "Not offered",
+                    "citizenship": "Not specified",
+                    "clearance": "Not specified",
+                    "graduation_years": ["2027"],
+                    "application_deadline": None,
+                }
+            },
         ),
         ranking=RankingResult(
             fit_score=88,
@@ -51,6 +62,8 @@ def test_email_renderer_outputs_required_sections():
         errors=[],
         high_signal_threshold=65,
         top_priority_threshold=80,
+        tracking_base_url="https://tracker.example.com",
+        tracking_secret="test-secret",
     )
 
     assert "1 job worth a look - Aug 22" in rendered.subject
@@ -61,6 +74,10 @@ def test_email_renderer_outputs_required_sections():
     assert "Your new-grad job shortlist" in rendered.html_body
     assert "Apply now" in rendered.html_body
     assert "Figma" in rendered.html_body
+    assert "Salary: $120,000 - $140,000" in rendered.html_body
+    assert "Sponsorship: Not offered" in rendered.html_body
+    assert "Mark applied" in rendered.html_body
+    assert "tracker.example.com" in rendered.html_body
     assert "simplify" not in rendered.html_body
     assert 'name="color-scheme" content="dark"' in rendered.html_body
     assert "background:#09090b" in rendered.html_body
