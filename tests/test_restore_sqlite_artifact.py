@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import importlib.util
 import io
+import sqlite3
 import zipfile
 from pathlib import Path
+
+import pytest
 
 
 def _load_restore_module():
@@ -15,16 +18,26 @@ def _load_restore_module():
     return module
 
 
-def test_restore_sqlite_artifact_main_extracts_latest_artifact(monkeypatch, tmp_path):
+def _sqlite_bytes(tmp_path: Path) -> bytes:
+    database_path = tmp_path / "artifact-source.db"
+    with sqlite3.connect(database_path) as connection:
+        connection.execute("CREATE TABLE daily_runs (run_date TEXT PRIMARY KEY)")
+        connection.execute("INSERT INTO daily_runs VALUES ('2026-07-30')")
+    return database_path.read_bytes()
+
+
+@pytest.mark.parametrize("archive_path", ["newgradnotifier.db", "data/newgradnotifier.db"])
+def test_restore_sqlite_artifact_main_restores_to_configured_path(monkeypatch, tmp_path, archive_path):
     module = _load_restore_module()
 
     archive_buffer = io.BytesIO()
     with zipfile.ZipFile(archive_buffer, "w") as archive:
-        archive.writestr("data/newgradnotifier.db", "sqlite-bytes")
+        archive.writestr(archive_path, _sqlite_bytes(tmp_path))
 
     monkeypatch.setenv("GITHUB_TOKEN", "token")
     monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repo")
-    monkeypatch.setenv("SQLITE_RESTORE_DIR", str(tmp_path))
+    target_path = tmp_path / "data" / "newgradnotifier.db"
+    monkeypatch.setenv("SQLITE_PATH", str(target_path))
     monkeypatch.setattr(
         module,
         "_request_json",
@@ -44,4 +57,36 @@ def test_restore_sqlite_artifact_main_extracts_latest_artifact(monkeypatch, tmp_
     exit_code = module.main()
 
     assert exit_code == 0
-    assert (tmp_path / "data" / "newgradnotifier.db").read_text() == "sqlite-bytes"
+    with sqlite3.connect(target_path) as connection:
+        assert connection.execute("SELECT run_date FROM daily_runs").fetchone() == ("2026-07-30",)
+
+
+def test_restore_sqlite_artifact_main_rejects_archive_without_database(monkeypatch, tmp_path):
+    module = _load_restore_module()
+
+    archive_buffer = io.BytesIO()
+    with zipfile.ZipFile(archive_buffer, "w") as archive:
+        archive.writestr("unrelated.txt", "not a database")
+
+    target_path = tmp_path / "data" / "newgradnotifier.db"
+    monkeypatch.setenv("GITHUB_TOKEN", "token")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repo")
+    monkeypatch.setenv("SQLITE_PATH", str(target_path))
+    monkeypatch.setattr(
+        module,
+        "_request_json",
+        lambda url, token: {
+            "artifacts": [
+                {
+                    "name": "newgradnotifier-sqlite-state",
+                    "expired": False,
+                    "created_at": "2026-03-15T20:59:04Z",
+                    "archive_download_url": "https://api.github.com/artifacts/1/zip",
+                }
+            ]
+        },
+    )
+    monkeypatch.setattr(module, "_download_artifact_archive", lambda url, token: archive_buffer.getvalue())
+
+    assert module.main() == 1
+    assert not target_path.exists()

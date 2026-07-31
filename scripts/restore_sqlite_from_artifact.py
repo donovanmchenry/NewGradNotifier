@@ -5,6 +5,8 @@ from __future__ import annotations
 import io
 import json
 import os
+import shutil
+import sqlite3
 import zipfile
 from pathlib import Path
 from urllib.error import HTTPError
@@ -58,11 +60,52 @@ def _download_artifact_archive(url: str, token: str) -> bytes:
     raise RuntimeError("Unable to download artifact archive after retrying request variants.")
 
 
+def _database_member(archive: zipfile.ZipFile, target_path: Path) -> zipfile.ZipInfo:
+    """Find the configured database in either nested or flattened artifacts."""
+
+    files = [member for member in archive.infolist() if not member.is_dir()]
+    configured_name = target_path.as_posix().removeprefix("./")
+    exact_matches = [member for member in files if member.filename == configured_name]
+    if len(exact_matches) == 1:
+        return exact_matches[0]
+
+    basename_matches = [member for member in files if Path(member.filename).name == target_path.name]
+    if len(basename_matches) == 1:
+        return basename_matches[0]
+    if not basename_matches:
+        raise ValueError(f"Artifact does not contain {target_path.name}.")
+    raise ValueError(f"Artifact contains multiple files named {target_path.name}.")
+
+
+def _restore_database(archive_bytes: bytes, target_path: Path) -> None:
+    """Validate and atomically restore the archived database to its runtime path."""
+
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = target_path.with_suffix(f"{target_path.suffix}.restore")
+    temporary_path.unlink(missing_ok=True)
+
+    try:
+        with zipfile.ZipFile(io.BytesIO(archive_bytes)) as archive:
+            member = _database_member(archive, target_path)
+            with archive.open(member) as source, temporary_path.open("wb") as destination:
+                shutil.copyfileobj(source, destination)
+
+        with sqlite3.connect(temporary_path) as connection:
+            result = connection.execute("PRAGMA quick_check").fetchone()
+        if result != ("ok",):
+            raise ValueError(f"Restored database failed SQLite validation: {result!r}")
+
+        temporary_path.replace(target_path)
+    except Exception:
+        temporary_path.unlink(missing_ok=True)
+        raise
+
+
 def main() -> int:
     token = os.getenv("GITHUB_TOKEN", "")
     repository = os.getenv("GITHUB_REPOSITORY", "")
     artifact_name = os.getenv("SQLITE_ARTIFACT_NAME", "newgradnotifier-sqlite-state")
-    output_dir = Path(os.getenv("SQLITE_RESTORE_DIR", "."))
+    target_path = Path(os.getenv("SQLITE_PATH", "./data/newgradnotifier.db"))
 
     if not token or not repository:
         print("GitHub token or repository is missing; skipping SQLite artifact restore.")
@@ -98,10 +141,12 @@ def main() -> int:
         print(f"Unable to download artifact ({exc.code}); skipping restore.")
         return 0
 
-    output_dir.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(io.BytesIO(archive_bytes)) as archive:
-        archive.extractall(output_dir)
-    print(f"Restored SQLite artifact '{artifact_name}' from workflow history.")
+    try:
+        _restore_database(archive_bytes, target_path)
+    except (OSError, sqlite3.DatabaseError, ValueError, zipfile.BadZipFile) as exc:
+        print(f"Unable to restore a valid SQLite database: {exc}")
+        return 1
+    print(f"Restored SQLite artifact '{artifact_name}' to {target_path}.")
     return 0
 
 
