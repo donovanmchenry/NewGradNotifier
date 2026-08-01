@@ -8,6 +8,7 @@ from datetime import datetime
 from dateutil import parser as date_parser
 
 from newgrad_notifier.contracts import CollectedJob, NormalizedJob
+from newgrad_notifier.normalization.identity import primary_job_identity
 from newgrad_notifier.normalization.job_details import extract_job_details
 from newgrad_notifier.utils.hashing import sha256_text
 from newgrad_notifier.utils.time import utc_now
@@ -50,18 +51,8 @@ def parse_posted_at(value: datetime | str | None) -> datetime | None:
 def build_canonical_key(job: CollectedJob, description_hash: str) -> str:
     """Build a stable identity key from the strongest available identifiers."""
 
-    if job.external_job_id:
-        return sha256_text(f"{job.company_name.lower()}::{job.external_job_id.lower()}")
-    return sha256_text(
-        "::".join(
-            [
-                job.company_name.lower().strip(),
-                normalize_title(job.title),
-                (job.location_text or "").lower().strip(),
-                description_hash,
-            ]
-        )
-    )
+    del description_hash  # Descriptions and source-specific IDs change without creating a new requisition.
+    return sha256_text(primary_job_identity(job.apply_url))
 
 
 def normalize_job(job: CollectedJob) -> NormalizedJob:

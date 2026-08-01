@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from newgrad_notifier.contracts import NormalizedJob
+from newgrad_notifier.normalization.identity import identity_aliases
 
 
 @dataclass(slots=True)
@@ -40,21 +40,7 @@ class BatchDeduper:
         return DedupeResult(unique_jobs=list(primary_by_key.values()), duplicate_count=duplicate_count)
 
     def _aliases(self, job: NormalizedJob) -> list[str]:
-        aliases = [job.canonical_key, f"url::{self._normalized_url(job.apply_url)}"]
-        aliases.append(f"title::{job.company_name.lower()}::{job.title_normalized}")
-        if job.external_job_id:
-            aliases.append(f"external::{job.company_name.lower()}::{job.external_job_id.lower()}")
-        return aliases
-
-    @staticmethod
-    def _normalized_url(url: str) -> str:
-        parts = urlsplit(url)
-        path = parts.path.rstrip("/")
-        if path.endswith("/application"):
-            path = path.removesuffix("/application")
-        ignored_query_keys = {"embed", "gh_src", "source", "utm_source", "utm_medium", "utm_campaign"}
-        query = urlencode(sorted((key, value) for key, value in parse_qsl(parts.query) if key.lower() not in ignored_query_keys))
-        return urlunsplit((parts.scheme.lower(), parts.netloc.lower(), path, query, ""))
+        return [job.canonical_key, *identity_aliases(job.apply_url)]
 
     def _merge(self, primary: NormalizedJob, duplicate: NormalizedJob) -> NormalizedJob:
         merged_metadata = dict(primary.metadata)

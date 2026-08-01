@@ -204,6 +204,7 @@ NON_ENTRY_EXPERIENCE_PATTERN = re.compile(r"\b([3-9]|\d{2,})\+?\s+years?\b")
 MID_LEVEL_TITLE_PATTERN = re.compile(
     r"\b(?:software engineer|software developer|frontend engineer|backend engineer|full stack engineer|fullstack engineer|product engineer|engineer)\s+(?:ii|iii|iv|v)\b"
 )
+NON_ENTRY_TITLE_PATTERN = re.compile(r"\b(?:experienced|mid[- ]level)\b|,\s*mid\b", re.IGNORECASE)
 
 
 def _contains_any(text: str, hints: tuple[str, ...]) -> bool:
@@ -249,6 +250,8 @@ def is_relevant_role(title: str, description: str, settings: AppSettings, source
     if _contains_any(title_lower, SENIORITY_EXCLUSION_HINTS):
         return False
     if MID_LEVEL_TITLE_PATTERN.search(title_lower):
+        return False
+    if NON_ENTRY_TITLE_PATTERN.search(title_lower):
         return False
     if NON_ENTRY_EXPERIENCE_PATTERN.search(haystack):
         return False

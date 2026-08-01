@@ -47,9 +47,9 @@ Production-ready daily discovery, dedupe, ranking, and email notification pipeli
   - optional general web search
 - Filters toward US and remote early-career SWE roles
 - Avoids internships, co-ops, IT/support, analyst, hardware, embedded, firmware, QA, and infra-heavy mismatch roles
-- Deduplicates across sources by ATS ID, URL, title/company aliases, and content hash
+- Deduplicates across runs and sources by normalized application URL and ATS requisition ID
 - Stores raw jobs, normalized jobs, scoring, status history, and email digests in SQLite by default
-- Uses OpenAI ranking refinement when configured and falls back to heuristics if unavailable
+- Uses personalized, no-cost heuristic ranking in production; OpenAI refinement remains an opt-in local feature
 - Sends:
   - a daily digest capped to the best 8 new or reopened matches
   - immediate alerts for very high-fit new roles at `fit_score >= 92`
@@ -108,7 +108,7 @@ newgrad-notifier --config config/production.toml serve-tracker
 
 ## Environment Variables
 
-These are the environment variable names supported by the app. The free GitHub workflow uses the email, OpenAI, scheduling, and SQLite values; PostgreSQL and tracking values remain optional and disabled.
+These are the environment variable names supported by the app. The free GitHub workflow uses the email, scheduling, and SQLite values; OpenAI, PostgreSQL, and tracking remain optional and disabled.
 
 - `EMAIL_RECIPIENT`
 - `EMAIL_SENDER`
@@ -169,9 +169,8 @@ SMTP still works as a fallback provider.
 
 ## OpenAI Ranking Behavior
 
-- Production config defaults to `OPENAI_MODEL=gpt-4.1-mini`
-- If the configured model is unavailable to your API key, the ranker automatically retries with `OPENAI_FALLBACK_MODELS` before falling back to heuristics
-- If `OPENAI_API_KEY` is not set, the app logs a warning and automatically falls back to heuristic-only scoring
+- Production runs in no-cost heuristic mode by default (`OPENAI_ENABLED=false`).
+- OpenAI ranking is opt-in for local experimentation; if enabled, unavailable models retry through `OPENAI_FALLBACK_MODELS` before falling back to heuristics.
 - The pipeline does not crash when OpenAI is unavailable
 
 ## Daily Scheduling
@@ -205,7 +204,6 @@ What it does:
 ### GitHub Actions secrets to add
 
 - `RESEND_API_KEY`
-- `OPENAI_API_KEY` (optional but recommended)
 - `SMTP_PASSWORD` only if you want SMTP fallback
 
 ### GitHub Actions variables to add

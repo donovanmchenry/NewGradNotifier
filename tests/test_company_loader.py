@@ -25,7 +25,7 @@ def test_default_ats_boards_include_new_high_confidence_seed():
     boards = load_default_ats_boards()
     groq_board = next(board for board in boards if board["company_name"] == "Groq")
 
-    assert groq_board["platform"] == "ashby"
+    assert groq_board["platform"] == "gem"
     assert groq_board["identifier"] == "groq"
     assert groq_board["enabled"] is True
     assert len(boards) >= 40

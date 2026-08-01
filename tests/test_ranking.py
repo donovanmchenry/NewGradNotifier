@@ -48,3 +48,25 @@ def test_ranking_service_skips_mismatch_role():
     assert result.recommendation.value == "skip"
     assert result.fit_score < 50
 
+
+def test_sparse_explicit_new_grad_role_reaches_digest_threshold():
+    settings = load_settings("config/local_dev.toml")
+    service = RankingService(settings)
+    job = normalize_job(
+        CollectedJob(
+            source_name="speedyapply_2027",
+            source_type=SourceType.STRUCTURED,
+            source_url="https://github.com/speedyapply/2027-SWE-College-Jobs",
+            apply_url="https://jobs.ashbyhq.com/nooks/311d6e70-5cfa-4e80-89f6-fe00ac1f9f53",
+            company_name="Nooks",
+            title="Software Engineer - New Grad",
+            location_text="San Francisco, CA",
+            description_text="",
+        )
+    )
+
+    result = service.rank(job)
+
+    assert result.fit_score >= 60
+    assert result.recommendation.value == "apply_if_interested"
+    assert result.scorer == "heuristic"

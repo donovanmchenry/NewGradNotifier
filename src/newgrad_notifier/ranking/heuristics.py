@@ -155,6 +155,26 @@ def _fit_score(job: NormalizedJob, profile: CandidateProfile, company_priority: 
         breakdown["brand_bonus"] += 2
 
     total = sum(breakdown.values())
+    explicit_entry_title = any(
+        term in job.title.lower()
+        for term in (
+            "new grad",
+            "new graduate",
+            "recent graduate",
+            "university graduate",
+            "early career",
+            "entry level",
+            "entry-level",
+        )
+    )
+    target_year_entry_title = str(profile.graduation_year) in job.title and any(
+        term in job.title.lower() for term in ("associate", "software engineer", "software developer")
+    )
+    if not any(term in text for term in MISMATCH_HINTS):
+        score_floor = 65 if explicit_entry_title else 60 if target_year_entry_title else 0
+        if total < score_floor:
+            breakdown["explicit_entry_floor"] += score_floor - total
+            total = score_floor
     return max(0, min(100, total)), dict(breakdown)
 
 
@@ -243,6 +263,7 @@ def build_heuristic_ranking(
         "location_match": "location matches your preference",
         "seniority_match": "no seniority red flags",
         "brand_bonus": "priority company",
+        "explicit_entry_floor": "explicitly labeled as an entry-level role",
     }
     _DIFFICULTY_LABELS: dict[str, str] = {
         "baseline": "standard entry-level bar",

@@ -31,9 +31,7 @@ jobs:
       TRACKING_ENABLED: "false"
       DB_BACKEND: sqlite
       SQLITE_PATH: ./data/newgradnotifier.db
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      OPENAI_MODEL: gpt-4.1-mini
-      OPENAI_FALLBACK_MODELS: gpt-4o-mini
+      OPENAI_ENABLED: "false"
       RUN_TIME_LOCAL: ${{ vars.RUN_TIME_LOCAL || '08:00' }}
       TIME_ZONE: ${{ vars.TIME_ZONE || 'America/New_York' }}
       SCHEDULE_START_DATE: 2026-07-01

@@ -26,7 +26,7 @@ def test_config_loading_uses_production_env_names(monkeypatch):
     assert settings.database.url == "sqlite:///./data/test-config.db"
     assert settings.schedule.cron == "0 8 * * *"
     assert settings.llm.enabled is False
-    assert settings.runtime_warnings
+    assert settings.runtime_warnings == []
 
 
 def test_config_loading_supports_openai_fallback_models(monkeypatch):
@@ -52,6 +52,17 @@ def test_openai_can_be_explicitly_disabled_even_when_a_key_exists(monkeypatch):
     settings = load_settings("config/production.toml")
 
     assert settings.llm.enabled is False
+
+
+def test_production_free_mode_stays_heuristic_even_when_a_key_exists(monkeypatch):
+    monkeypatch.setenv("EMAIL_PROVIDER", "console")
+    monkeypatch.setenv("OPENAI_API_KEY", "openai-test-key")
+    monkeypatch.delenv("OPENAI_ENABLED", raising=False)
+
+    settings = load_settings("config/production.toml")
+
+    assert settings.llm.enabled is False
+    assert settings.llm.provider == "heuristic"
 
 
 def test_smtp_validation_fails_without_password(monkeypatch):

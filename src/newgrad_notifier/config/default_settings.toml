@@ -33,11 +33,11 @@ host = "127.0.0.1"
 port = 8765
 
 [llm]
-provider = "openai"
+provider = "heuristic"
 model = "gpt-5-mini"
 fallback_models = ["gpt-4.1-mini"]
 openai_api_key = ""
-enabled = true
+enabled = false
 
 [schedule]
 run_time_local = "08:00"
@@ -58,6 +58,7 @@ max_company_pages_per_run = 75
 max_description_fetches_per_run = 30
 min_description_characters = 160
 max_job_age_days = 45
+digest_max_job_age_days = 7
 min_domain_interval_seconds = 1.0
 request_timeout_seconds = 20
 cache_ttl_seconds = 21600

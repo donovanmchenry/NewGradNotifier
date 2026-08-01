@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from newgrad_notifier.collectors.base import CollectorContext
@@ -33,6 +34,19 @@ def build_http_client(settings: AppSettings) -> CachedHttpClient:
         min_domain_interval_seconds=settings.collection.min_domain_interval_seconds,
         cache_ttl_seconds=settings.collection.cache_ttl_seconds,
     )
+
+
+def is_fresh_listing(job: NormalizedJob, reference_time: datetime, max_age_days: int) -> bool:
+    """Return whether a newly discovered record is recent enough for an email."""
+
+    if job.posted_at is None:
+        return True
+    posted_at = job.posted_at
+    if posted_at.tzinfo is None:
+        posted_at = posted_at.replace(tzinfo=UTC)
+    if reference_time.tzinfo is None:
+        reference_time = reference_time.replace(tzinfo=UTC)
+    return posted_at >= reference_time - timedelta(days=max_age_days)
 
 
 def run_pipeline_once(config_path: str | None = None) -> None:
@@ -132,7 +146,7 @@ def run_pipeline_once(config_path: str | None = None) -> None:
             stats.total_normalized = len(normalized_jobs)
             dedupe_result = deduper.dedupe(normalized_jobs)
             unique_jobs = dedupe_result.unique_jobs
-            new_candidates = [job for job in unique_jobs if repository.find_normalized_job(job.canonical_key) is None]
+            new_candidates = [job for job in unique_jobs if repository.find_normalized_job_by_identity(job) is None]
             enriched_by_key = {
                 job.canonical_key: job
                 for job in enrich_sparse_jobs(
@@ -145,23 +159,32 @@ def run_pipeline_once(config_path: str | None = None) -> None:
             }
             unique_jobs = [enriched_by_key.get(job.canonical_key, job) for job in unique_jobs]
 
-            persisted_jobs: list[tuple[NormalizedJob, JobLifecycleState, NormalizedJobRecord]] = []
+            persisted_jobs: list[tuple[NormalizedJob, JobLifecycleState, NormalizedJobRecord, bool]] = []
             for normalized in unique_jobs:
                 record, lifecycle_state = repository.upsert_normalized_job(
                     normalized,
                     raw_job_ids.get(normalized.canonical_key),
                 )
                 normalized = normalized.model_copy(update={"first_seen_at": record.first_seen_at})
-                persisted_jobs.append((normalized, lifecycle_state, record))
-                if lifecycle_state == JobLifecycleState.NEW:
+                fresh = is_fresh_listing(
+                    normalized,
+                    run.started_at,
+                    settings.collection.digest_max_job_age_days,
+                )
+                persisted_jobs.append((normalized, lifecycle_state, record, fresh))
+                if lifecycle_state == JobLifecycleState.NEW and fresh:
                     stats.total_new += 1
-                if lifecycle_state == JobLifecycleState.REOPENED:
+                if lifecycle_state == JobLifecycleState.REOPENED and fresh:
                     stats.total_reopened += 1
 
-            actionable = [item for item in persisted_jobs if item[1] in {JobLifecycleState.NEW, JobLifecycleState.REOPENED}]
+            actionable = [
+                item
+                for item in persisted_jobs
+                if item[1] in {JobLifecycleState.NEW, JobLifecycleState.REOPENED} and item[3]
+            ]
             rankings = ranking_service.rank_all([item[0] for item in actionable])
             ranked_jobs: list[RankedJob] = []
-            for (normalized, lifecycle_state, record), ranking in zip(actionable, rankings):
+            for (normalized, lifecycle_state, record, _fresh), ranking in zip(actionable, rankings):
                 repository.persist_scoring(run.id, record.id, ranking)
                 prev_fit_score: int | None = None
                 if lifecycle_state != JobLifecycleState.NEW:

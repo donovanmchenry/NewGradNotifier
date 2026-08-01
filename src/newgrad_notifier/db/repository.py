@@ -27,6 +27,7 @@ from newgrad_notifier.db.models import (
     RawJobRecord,
     ScoringResultRecord,
 )
+from newgrad_notifier.normalization.identity import identity_aliases
 from newgrad_notifier.utils.hashing import sha256_text
 from newgrad_notifier.utils.time import utc_now
 
@@ -36,6 +37,7 @@ class Repository:
 
     def __init__(self, session: Session) -> None:
         self.session = session
+        self._identity_index: dict[str, NormalizedJobRecord] | None = None
 
     def create_run(self) -> DailyRun:
         run = DailyRun(
@@ -100,6 +102,30 @@ class Repository:
         statement = select(NormalizedJobRecord).where(NormalizedJobRecord.canonical_key == canonical_key)
         return self.session.scalar(statement)
 
+    def find_normalized_job_by_identity(self, job: NormalizedJob) -> NormalizedJobRecord | None:
+        """Find a job by its current key or any durable URL/ATS alias."""
+
+        exact = self.find_normalized_job(job.canonical_key)
+        if exact is not None:
+            return exact
+        self._ensure_identity_index()
+        assert self._identity_index is not None
+        return next((self._identity_index[alias] for alias in identity_aliases(job.apply_url) if alias in self._identity_index), None)
+
+    def _ensure_identity_index(self) -> None:
+        if self._identity_index is not None:
+            return
+        self._identity_index = {}
+        for record in self.session.scalars(select(NormalizedJobRecord)):
+            self._index_identity(record)
+
+    def _index_identity(self, record: NormalizedJobRecord) -> None:
+        if self._identity_index is None:
+            return
+        self._identity_index[f"canonical::{record.canonical_key}"] = record
+        for alias in identity_aliases(record.apply_url):
+            self._identity_index.setdefault(alias, record)
+
     def list_tracked_jobs(self, limit: int = 100) -> list[NormalizedJobRecord]:
         statement = select(NormalizedJobRecord).order_by(NormalizedJobRecord.last_seen_at.desc()).limit(limit)
         return list(self.session.scalars(statement))
@@ -137,7 +163,7 @@ class Repository:
         normalized_job: NormalizedJob,
         raw_job_id: int | None,
     ) -> tuple[NormalizedJobRecord, JobLifecycleState]:
-        existing = self.find_normalized_job(normalized_job.canonical_key)
+        existing = self.find_normalized_job_by_identity(normalized_job)
         now = utc_now()
         if existing is None:
             company = self._find_company_by_name(normalized_job.company_name)
@@ -173,6 +199,7 @@ class Repository:
             self._track_status(record, JobLifecycleState.NEW)
             self.session.commit()
             self.session.refresh(record)
+            self._index_identity(record)
             return record, JobLifecycleState.NEW
 
         user_managed_states = {
@@ -181,6 +208,7 @@ class Repository:
             JobLifecycleState.IGNORED.value,
         }
         user_managed = existing.current_status in user_managed_states
+        prior_source_name = existing.source_name
         lifecycle_state = JobLifecycleState.SEEN
         last_seen = existing.last_seen_at
         if last_seen.tzinfo is None:
@@ -214,12 +242,19 @@ class Repository:
         if not user_managed:
             existing.current_status = lifecycle_state.value
         existing.last_seen_at = now
-        existing.metadata_json = normalized_job.metadata
+        metadata = dict(existing.metadata_json or {})
+        seen_in_sources = set(metadata.get("seen_in_sources", []))
+        metadata.update(normalized_job.metadata)
+        seen_in_sources.update(normalized_job.metadata.get("seen_in_sources", []))
+        seen_in_sources.update([prior_source_name, normalized_job.source_name])
+        metadata["seen_in_sources"] = sorted(seen_in_sources)
+        existing.metadata_json = metadata
         if lifecycle_state == JobLifecycleState.REOPENED:
             self._track_status(existing, lifecycle_state)
         self.session.add(existing)
         self.session.commit()
         self.session.refresh(existing)
+        self._index_identity(existing)
         return existing, lifecycle_state
 
     def _find_company_by_name(self, company_name: str) -> Company | None:

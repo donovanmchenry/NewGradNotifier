@@ -66,3 +66,33 @@ def test_batch_deduper_normalizes_ats_application_suffixes():
 
     assert result.duplicate_count == 1
     assert len(result.unique_jobs) == 1
+
+
+def test_batch_deduper_keeps_distinct_requisitions_with_same_company_and_title():
+    common = {
+        "source_name": "speedyapply_2027",
+        "source_type": SourceType.STRUCTURED,
+        "source_url": "jobs.md",
+        "company_name": "IXL Learning",
+        "title": "Software Engineer - New Grad",
+        "description_text": "",
+    }
+    san_mateo = normalize_job(
+        CollectedJob(
+            **common,
+            apply_url="https://www.ixl.com/company/jobs?gh_jid=8615710002",
+            location_text="San Mateo, CA",
+        )
+    )
+    raleigh = normalize_job(
+        CollectedJob(
+            **common,
+            apply_url="https://www.ixl.com/company/jobs?gh_jid=8615717002",
+            location_text="Raleigh, NC",
+        )
+    )
+
+    result = BatchDeduper().dedupe([san_mateo, raleigh])
+
+    assert result.duplicate_count == 0
+    assert len(result.unique_jobs) == 2

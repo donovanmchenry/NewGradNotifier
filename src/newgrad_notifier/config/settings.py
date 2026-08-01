@@ -78,6 +78,7 @@ class CollectionSettings(BaseModel):
     max_description_fetches_per_run: int = 30
     min_description_characters: int = 160
     max_job_age_days: int = 45
+    digest_max_job_age_days: int = 7
     min_domain_interval_seconds: float = 1.0
     request_timeout_seconds: int = 20
     cache_ttl_seconds: int = 60 * 60 * 6

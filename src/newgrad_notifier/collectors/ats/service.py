@@ -6,6 +6,7 @@ import logging
 
 from newgrad_notifier.collectors.ats.ashby import AshbyCollector
 from newgrad_notifier.collectors.ats.base import ATSBoardCollector
+from newgrad_notifier.collectors.ats.gem import GemCollector
 from newgrad_notifier.collectors.ats.greenhouse import GreenhouseCollector
 from newgrad_notifier.collectors.ats.lever import LeverCollector
 from newgrad_notifier.collectors.ats.smartrecruiters import SmartRecruitersCollector
@@ -24,6 +25,7 @@ class ATSCollectorService(Collector):
         self.boards = [board for board in boards if board.enabled]
         self.platform_collectors: dict[str, ATSBoardCollector] = {
             "ashby": AshbyCollector(),
+            "gem": GemCollector(),
             "greenhouse": GreenhouseCollector(),
             "lever": LeverCollector(),
             "smartrecruiters": SmartRecruitersCollector(),

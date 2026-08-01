@@ -21,11 +21,11 @@ smtp_use_tls = true
 outbox_dir = "outbox"
 
 [llm]
-provider = "openai"
+provider = "heuristic"
 model = "gpt-4.1-mini"
 fallback_models = ["gpt-4o-mini"]
 openai_api_key = ""
-enabled = true
+enabled = false
 
 [schedule]
 run_time_local = "08:00"
@@ -45,6 +45,7 @@ max_jobs_per_source = 500
 max_description_fetches_per_run = 30
 min_description_characters = 160
 max_job_age_days = 45
+digest_max_job_age_days = 7
 min_domain_interval_seconds = 0.25
 
 [filters]
@@ -120,7 +121,7 @@ job_id_key = "id"
 
 [[markdown_feeds]]
 name = "speedyapply_2027"
-url = "https://raw.githubusercontent.com/speedyapply/2026-SWE-College-Jobs/main/NEW_GRAD_USA.md"
+url = "https://raw.githubusercontent.com/speedyapply/2027-SWE-College-Jobs/main/NEW_GRAD_USA.md"
 max_age_days = 45
 
 [company_coverage]
