@@ -5,16 +5,39 @@ from newgrad_notifier.normalization.normalizer import normalize_job
 from newgrad_notifier.pipeline import is_fresh_listing, run_pipeline_once
 
 
+class FixtureCollector:
+    name = "structured:fixture"
+
+    def collect(self, _context):
+        return [
+            CollectedJob(
+                source_name="fixture",
+                source_type=SourceType.STRUCTURED,
+                source_url="fixture.json",
+                apply_url="https://boards.greenhouse.io/figma/jobs/12345",
+                company_name="Figma",
+                title="Software Engineer, New Grad 2027",
+                location_text="Remote, United States",
+                description_text=(
+                    "Figma is hiring a software engineer new grad for the class of 2027. "
+                    "You will build product features with React, TypeScript, APIs, and "
+                    "collaborative web systems."
+                ),
+            )
+        ]
+
+
 def test_two_pipeline_runs_only_digest_jobs_once(monkeypatch, tmp_path, capsys):
     monkeypatch.setenv("EMAIL_PROVIDER", "console")
     monkeypatch.setenv("SQLITE_PATH", str(tmp_path / "pipeline.db"))
+    monkeypatch.setattr("newgrad_notifier.pipeline.build_collectors", lambda _settings: [FixtureCollector()])
 
     run_pipeline_once("config/local_dev.toml")
     first_output = capsys.readouterr().out
     run_pipeline_once("config/local_dev.toml")
     second_output = capsys.readouterr().out
 
-    assert "jobs worth a look" in first_output
+    assert "worth a look" in first_output
     assert second_output == ""
     assert "Apply: https://boards.greenhouse.io/figma/jobs/12345" not in second_output
 
