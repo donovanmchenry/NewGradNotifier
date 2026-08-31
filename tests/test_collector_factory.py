@@ -16,5 +16,4 @@ def test_factory_uses_curated_ats_boards_when_no_enabled_boards_are_configured(m
 
     assert ats_collectors
     assert len(ats_collectors[0].boards) >= 40
-    groq = next(board for board in ats_collectors[0].boards if board.company_name == "Groq")
-    assert groq.platform == "gem"
+    assert all(board.company_name != "Groq" for board in ats_collectors[0].boards)

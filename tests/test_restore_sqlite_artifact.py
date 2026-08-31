@@ -90,3 +90,25 @@ def test_restore_sqlite_artifact_main_rejects_archive_without_database(monkeypat
 
     assert module.main() == 1
     assert not target_path.exists()
+
+
+def test_required_restore_fails_closed_when_no_artifact_exists(monkeypatch, tmp_path):
+    module = _load_restore_module()
+    monkeypatch.setenv("GITHUB_TOKEN", "token")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repo")
+    monkeypatch.setenv("SQLITE_PATH", str(tmp_path / "state.db"))
+    monkeypatch.setenv("SQLITE_RESTORE_REQUIRED", "true")
+    monkeypatch.setattr(module, "_request_json", lambda _url, _token: {"artifacts": []})
+
+    assert module.main() == 1
+
+
+def test_optional_restore_allows_first_run_without_artifact(monkeypatch, tmp_path):
+    module = _load_restore_module()
+    monkeypatch.setenv("GITHUB_TOKEN", "token")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repo")
+    monkeypatch.setenv("SQLITE_PATH", str(tmp_path / "state.db"))
+    monkeypatch.setenv("SQLITE_RESTORE_REQUIRED", "false")
+    monkeypatch.setattr(module, "_request_json", lambda _url, _token: {"artifacts": []})
+
+    assert module.main() == 0

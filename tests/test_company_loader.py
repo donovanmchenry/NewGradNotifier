@@ -27,5 +27,5 @@ def test_default_ats_boards_include_new_high_confidence_seed():
 
     assert groq_board["platform"] == "gem"
     assert groq_board["identifier"] == "groq"
-    assert groq_board["enabled"] is True
+    assert groq_board["enabled"] is False
     assert len(boards) >= 40

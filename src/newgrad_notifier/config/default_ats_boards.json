@@ -30,7 +30,7 @@
   {"company_name":"Cursor","platform":"ashby","identifier":"cursor","priority_tier":2,"enabled":true},
   {"company_name":"Docker","platform":"ashby","identifier":"docker","priority_tier":2,"enabled":true},
   {"company_name":"ElevenLabs","platform":"ashby","identifier":"elevenlabs","priority_tier":2,"enabled":true},
-  {"company_name":"Groq","platform":"gem","identifier":"groq","priority_tier":2,"enabled":true},
+  {"company_name":"Groq","platform":"gem","identifier":"groq","priority_tier":2,"enabled":false},
   {"company_name":"Linear","platform":"ashby","identifier":"linear","priority_tier":2,"enabled":true},
   {"company_name":"Modal","platform":"ashby","identifier":"modal","priority_tier":2,"enabled":true},
   {"company_name":"Neon","platform":"ashby","identifier":"neon","priority_tier":2,"enabled":true},

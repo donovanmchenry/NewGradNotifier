@@ -58,6 +58,11 @@ def extract_description_from_html(html: str) -> str:
         if node is not None:
             candidates.append(" ".join(node.get_text(" ", strip=True).split()))
 
+    for selector in ("meta[property='og:description']", "meta[name='description']"):
+        node = soup.select_one(selector)
+        if node is not None:
+            candidates.append(_plain_text(node.get("content")))
+
     return max((candidate for candidate in candidates if candidate), key=len, default="")
 
 

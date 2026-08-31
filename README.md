@@ -40,7 +40,7 @@ Production-ready daily discovery, dedupe, ranking, and email notification pipeli
 ## What This Repo Does
 
 - Collects jobs from:
-  - description-rich New-Grad-Jobs and Simplify repository feeds
+  - the ApplyGuy 2027 and Simplify machine-readable feeds
   - the SpeedyApply 2027 U.S. new-grad list
   - 46 curated Greenhouse, Lever, and Ashby boards
   - tracked company careers pages
@@ -72,7 +72,8 @@ source .venv/bin/activate
 2. Install dependencies.
 
 ```bash
-pip install -e '.[dev]'
+pip install -r requirements.lock
+pip install -e . --no-deps
 python -m playwright install chromium
 ```
 
@@ -195,11 +196,14 @@ What it does:
 - tolerates delayed cron delivery and runs only once after `08:00` in `America/New_York`
 - skips scheduled runs entirely until `2026-07-01`
 - restores the last SQLite state artifact if one exists
-- runs tests
+- fails closed instead of running with empty state when restoration fails
+- runs a production configuration and SQLite preflight
 - runs the production pipeline
 - uploads the updated SQLite DB as a GitHub Actions artifact for the next run
 - sends an independent Resend failure alert if the workflow fails
 - uses only GitHub Actions and its persisted SQLite artifact; no Render services are provisioned
+
+The separate CI workflow runs the complete test suite on every push and pull request using the locked dependency set in `requirements.lock`.
 
 ### GitHub Actions secrets to add
 

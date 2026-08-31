@@ -65,6 +65,17 @@ def test_production_free_mode_stays_heuristic_even_when_a_key_exists(monkeypatch
     assert settings.llm.provider == "heuristic"
 
 
+def test_production_uses_live_2027_feed_with_direct_application_urls(monkeypatch):
+    monkeypatch.setenv("EMAIL_PROVIDER", "console")
+
+    settings = load_settings("config/production.toml")
+    feed = next(item for item in settings.structured_feeds if item.name == "applyguy_2027")
+
+    assert feed.url.endswith("/ApplyGuy/2027-New-Grad-Jobs/main/data/new-grad-jobs.json")
+    assert feed.url_key == "listingUrl"
+    assert feed.posted_at_key == "posted"
+
+
 def test_smtp_validation_fails_without_password(monkeypatch):
     monkeypatch.setenv("EMAIL_PROVIDER", "smtp")
     monkeypatch.setenv("EMAIL_RECIPIENT", "dzmchenry@gmail.com")

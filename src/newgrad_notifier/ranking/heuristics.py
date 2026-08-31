@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 
 from newgrad_notifier.config.settings import CandidateProfile
@@ -72,9 +73,27 @@ MISMATCH_HINTS = (
     "research scientist",
 )
 
+SENIOR_TITLE_HINTS = ("senior", "staff", "lead", "principal")
+EXPERIENCE_REQUIREMENT_PATTERN = re.compile(
+    r"\b(?:at least|minimum(?: of)?|requires?|required|must have|with)\s+"
+    r"(\d{1,2})\+?\s+years?\b|"
+    r"\b(\d{1,2})\+?\s+years?\s+of\s+"
+    r"(?:professional\s+|relevant\s+|industry\s+|software(?: development)?\s+)?experience\b"
+)
+
 
 def _text(job: NormalizedJob) -> str:
     return f"{job.title} {job.description_text} {job.location_text or ''}".lower()
+
+
+def _required_experience_years(text: str) -> int:
+    years = [
+        int(value)
+        for match in EXPERIENCE_REQUIREMENT_PATTERN.finditer(text)
+        for value in match.groups()
+        if value is not None and int(value) <= 15
+    ]
+    return max(years, default=0)
 
 
 def extract_matching_skills(job: NormalizedJob, profile: CandidateProfile) -> tuple[list[str], list[str]]:
@@ -110,6 +129,7 @@ def classify_tags(job: NormalizedJob) -> list[str]:
 
 def _fit_score(job: NormalizedJob, profile: CandidateProfile, company_priority: int) -> tuple[int, dict[str, int]]:
     text = _text(job)
+    title_text = job.title.lower()
     breakdown = defaultdict(int)
 
     if any(term in text for term in ("software engineer", "software developer", "product engineer")):
@@ -139,9 +159,10 @@ def _fit_score(job: NormalizedJob, profile: CandidateProfile, company_priority: 
     if job.is_remote or any(location.lower() in (job.location_text or "").lower() for location in profile.preferred_locations):
         breakdown["location_match"] += 4
 
-    if any(term in text for term in ("senior", "staff", "lead", "principal", "5+ years", "7+ years")):
+    required_experience_years = _required_experience_years(text)
+    if any(term in title_text for term in SENIOR_TITLE_HINTS) or required_experience_years >= 5:
         breakdown["seniority_penalty"] -= 35
-    elif any(term in text for term in ("2+ years", "3+ years")):
+    elif required_experience_years >= 2:
         breakdown["seniority_penalty"] -= 18
     else:
         breakdown["seniority_match"] += 4

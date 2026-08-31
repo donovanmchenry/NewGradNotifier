@@ -70,3 +70,64 @@ def test_sparse_explicit_new_grad_role_reaches_digest_threshold():
     assert result.fit_score >= 60
     assert result.recommendation.value == "apply_if_interested"
     assert result.scorer == "heuristic"
+
+
+def test_entry_level_role_is_not_penalized_for_working_with_senior_engineers():
+    settings = load_settings("config/local_dev.toml")
+    service = RankingService(settings)
+    job_with_senior_teammates = normalize_job(
+        CollectedJob(
+            source_name="fixture",
+            source_type=SourceType.STRUCTURED,
+            source_url="fixture.json",
+            apply_url="https://example.com/software-engineer-i",
+            company_name="Example",
+            title="Software Engineer I",
+            location_text="New York, NY",
+            description_text=(
+                "Build backend APIs with Python and React while collaborating with experienced teammates "
+                "under the guidance of senior engineers."
+            ),
+        )
+    )
+    comparison_job = normalize_job(
+        CollectedJob(
+            source_name="fixture",
+            source_type=SourceType.STRUCTURED,
+            source_url="fixture.json",
+            apply_url="https://example.com/software-engineer-i-comparison",
+            company_name="Example",
+            title="Software Engineer I",
+            location_text="New York, NY",
+            description_text=(
+                "Build backend APIs with Python and React while collaborating with experienced teammates "
+                "under the guidance of experienced engineers."
+            ),
+        )
+    )
+
+    result = service.rank(job_with_senior_teammates)
+    comparison_result = service.rank(comparison_job)
+
+    assert result.fit_score == comparison_result.fit_score
+
+
+def test_entry_level_title_is_penalized_for_explicit_experience_requirement():
+    settings = load_settings("config/local_dev.toml")
+    service = RankingService(settings)
+    job = normalize_job(
+        CollectedJob(
+            source_name="fixture",
+            source_type=SourceType.STRUCTURED,
+            source_url="fixture.json",
+            apply_url="https://example.com/experienced-software-engineer-i",
+            company_name="Example",
+            title="Software Engineer I",
+            location_text="New York, NY",
+            description_text="Build backend APIs with Python. Requires 5+ years of professional experience.",
+        )
+    )
+
+    result = service.rank(job)
+
+    assert result.fit_score < 60

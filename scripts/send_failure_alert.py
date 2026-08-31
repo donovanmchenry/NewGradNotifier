@@ -33,7 +33,12 @@ def main() -> int:
     request = Request(
         "https://api.resend.com/emails",
         data=payload,
-        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        headers={
+            "Accept": "application/json",
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "User-Agent": "newgrad-notifier",
+        },
         method="POST",
     )
     try:

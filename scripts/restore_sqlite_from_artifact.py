@@ -9,7 +9,7 @@ import shutil
 import sqlite3
 import zipfile
 from pathlib import Path
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import HTTPRedirectHandler, Request, build_opener, urlopen
 
 
@@ -106,17 +106,21 @@ def main() -> int:
     repository = os.getenv("GITHUB_REPOSITORY", "")
     artifact_name = os.getenv("SQLITE_ARTIFACT_NAME", "newgradnotifier-sqlite-state")
     target_path = Path(os.getenv("SQLITE_PATH", "./data/newgradnotifier.db"))
+    restore_required = os.getenv("SQLITE_RESTORE_REQUIRED", "false").lower() in {"1", "true", "yes"}
+
+    def restore_failure(message: str) -> int:
+        suffix = "; refusing to run without persisted state." if restore_required else "; skipping restore."
+        print(f"{message}{suffix}")
+        return 1 if restore_required else 0
 
     if not token or not repository:
-        print("GitHub token or repository is missing; skipping SQLite artifact restore.")
-        return 0
+        return restore_failure("GitHub token or repository is missing")
 
     artifacts_url = f"https://api.github.com/repos/{repository}/actions/artifacts?per_page=100"
     try:
         payload = _request_json(artifacts_url, token)
-    except HTTPError as exc:
-        print(f"Unable to list artifacts ({exc.code}); skipping restore.")
-        return 0
+    except URLError as exc:
+        return restore_failure(f"Unable to list artifacts ({exc})")
 
     artifacts = [
         artifact
@@ -124,8 +128,7 @@ def main() -> int:
         if artifact.get("name") == artifact_name and not artifact.get("expired", False)
     ]
     if not artifacts:
-        print("No prior SQLite artifact found.")
-        return 0
+        return restore_failure("No prior SQLite artifact found")
 
     artifacts.sort(key=lambda item: item.get("created_at", ""), reverse=True)
     latest = artifacts[0]
@@ -134,12 +137,10 @@ def main() -> int:
         if not download_url and latest.get("id"):
             download_url = f"https://api.github.com/repos/{repository}/actions/artifacts/{latest['id']}/zip"
         if not download_url:
-            print("Latest SQLite artifact did not include a download URL; skipping restore.")
-            return 0
+            return restore_failure("Latest SQLite artifact did not include a download URL")
         archive_bytes = _download_artifact_archive(download_url, token)
-    except HTTPError as exc:
-        print(f"Unable to download artifact ({exc.code}); skipping restore.")
-        return 0
+    except URLError as exc:
+        return restore_failure(f"Unable to download artifact ({exc})")
 
     try:
         _restore_database(archive_bytes, target_path)

@@ -93,18 +93,17 @@ keywords = [
 ]
 
 [[structured_feeds]]
-name = "new_grad_jobs_repo"
-url = "https://raw.githubusercontent.com/ambicuity/New-Grad-Jobs/main/docs/jobs.json"
+name = "applyguy_2027"
+url = "https://raw.githubusercontent.com/ApplyGuy/2027-New-Grad-Jobs/main/data/new-grad-jobs.json"
 format = "json"
 job_path = "jobs"
 company_key = "company"
 title_key = "title"
-url_key = "url"
+url_key = "listingUrl"
 location_key = "location"
-posted_at_key = "posted_at"
-description_key = "description"
+posted_at_key = "posted"
+description_key = ""
 job_id_key = "id"
-closed_key = "is_closed"
 
 [[structured_feeds]]
 name = "simplify_new_grad"
