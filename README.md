@@ -8,7 +8,8 @@ Production-ready daily discovery, dedupe, ranking, and email notification pipeli
 .
 ├── .github/
 │   └── workflows/
-│       └── daily-run.yml
+│       ├── daily-run.yml
+│       └── story-watch.yml
 ├── config/
 │   ├── local_dev.toml
 │   └── production.toml
@@ -59,6 +60,8 @@ Production-ready daily discovery, dedupe, ranking, and email notification pipeli
 - Tracks per-source health, including failed and repeatedly empty ATS boards
 - Includes an optional local tracking dashboard and feedback learner, disabled in the free production deployment
 - Suppresses empty digests and sends an independent failure alert when a run breaks
+- Checks zero2sudo's public Story viewer every ten minutes and emails newly observed Stories
+- Attaches new image Stories and extracts visible text and URLs with free local OCR
 
 ## Local Setup
 
@@ -140,6 +143,14 @@ These are the environment variable names supported by the app. The free GitHub w
 - `TRACKING_DASHBOARD_PASSWORD`
 - `TRACKING_HOST`
 - `TRACKING_PORT`
+- `STORY_WATCH_ENABLED`
+- `STORY_WATCH_USERNAME`
+- `STORY_WATCH_URL`
+- `STORY_WATCH_STATE_PATH`
+- `STORY_WATCH_NOTIFY_EXISTING`
+- `STORY_WATCH_OCR_ENABLED`
+- `STORY_WATCH_ATTACH_IMAGES`
+- `STORY_WATCH_MAX_ATTACHMENT_BYTES`
 
 The free production workflow pins SQLite and disables hosted tracking so it cannot provision or depend on paid infrastructure.
 
@@ -183,6 +194,22 @@ The runtime target is:
 - scheduled GitHub Actions automation begins on `2026-07-01`
 
 The app derives its cron expression from those values and APScheduler uses the configured timezone directly.
+
+## zero2sudo Story Alerts
+
+The separate [`.github/workflows/story-watch.yml`](.github/workflows/story-watch.yml) workflow checks the public `insta-stories-viewer.com` profile every ten minutes. It reads Story metadata directly from the page and does not click advertisements or require an Instagram login.
+
+The first successful run creates a silent baseline so the existing Story backlog does not generate a large email. Later runs send one email containing only newly observed Stories. Image Stories are attached when they are under the configured size limit, and Tesseract OCR extracts visible text and possible URLs. Video Stories are linked because attaching every video would make email delivery unreliable.
+
+The workflow stores its deduplication state as a one-day GitHub Actions artifact. If that artifact expires after the workflow has been disabled, the next run safely creates a new silent baseline.
+
+Run a local check with:
+
+```bash
+newgrad-notifier --config config/production.toml watch-stories
+```
+
+The anonymous viewer does not preserve Instagram link stickers. Notifications therefore include the Story media, OCR text, any visible URL, and a link back to the viewer page.
 
 ## GitHub Actions Setup
 
