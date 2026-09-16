@@ -21,6 +21,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("run-once", help="Run discovery, ranking, and digest generation once.")
     subparsers.add_parser("schedule", help="Run the APScheduler service.")
     subparsers.add_parser("serve-tracker", help="Run the application tracking dashboard.")
+    subparsers.add_parser("watch-stories", help="Check the configured Instagram Story viewer for new posts.")
     return parser
 
 
@@ -51,6 +52,17 @@ def main() -> None:
         from newgrad_notifier.tracking.app import run_tracking_server
 
         run_tracking_server(args.config_path)
+        return
+    if args.command == "watch-stories":
+        from newgrad_notifier.stories.watcher import watch_stories
+
+        settings = load_settings(args.config_path)
+        result = watch_stories(settings)
+        print(
+            f"Story watch complete: {result.total_stories} active, "
+            f"{result.new_stories} new, notification_sent={result.notification_sent}, "
+            f"baseline_created={result.baseline_created}"
+        )
         return
 
 

@@ -65,6 +65,17 @@ class ScheduleSettings(BaseModel):
     immediate_alert_threshold: int = 92
 
 
+class StoryWatcherSettings(BaseModel):
+    enabled: bool = False
+    username: str = "zero2sudo"
+    source_url: str = "https://insta-stories-viewer.com/zero2sudo/"
+    state_path: str = "./data/zero2sudo-story-state.json"
+    notify_existing_on_first_run: bool = False
+    ocr_enabled: bool = True
+    attach_images: bool = True
+    max_attachment_bytes: int = 6 * 1024 * 1024
+
+
 class ThresholdSettings(BaseModel):
     digest_min_fit: int = 65
     top_priority_fit: int = 80
@@ -166,6 +177,7 @@ class AppSettings(BaseModel):
     tracking: TrackingSettings = Field(default_factory=TrackingSettings)
     llm: LLMSettings
     schedule: ScheduleSettings
+    story_watcher: StoryWatcherSettings = Field(default_factory=StoryWatcherSettings)
     thresholds: ThresholdSettings
     collection: CollectionSettings
     filters: FilterSettings
@@ -219,6 +231,14 @@ def _apply_environment_overrides(payload: dict[str, Any]) -> dict[str, Any]:
         "IMMEDIATE_ALERT_THRESHOLD": ("schedule", "immediate_alert_threshold"),
         "RUN_TIME_LOCAL": ("schedule", "run_time_local"),
         "TIME_ZONE": ("schedule", "timezone"),
+        "STORY_WATCH_ENABLED": ("story_watcher", "enabled"),
+        "STORY_WATCH_USERNAME": ("story_watcher", "username"),
+        "STORY_WATCH_URL": ("story_watcher", "source_url"),
+        "STORY_WATCH_STATE_PATH": ("story_watcher", "state_path"),
+        "STORY_WATCH_NOTIFY_EXISTING": ("story_watcher", "notify_existing_on_first_run"),
+        "STORY_WATCH_OCR_ENABLED": ("story_watcher", "ocr_enabled"),
+        "STORY_WATCH_ATTACH_IMAGES": ("story_watcher", "attach_images"),
+        "STORY_WATCH_MAX_ATTACHMENT_BYTES": ("story_watcher", "max_attachment_bytes"),
     }
     merged = dict(payload)
     for env_key, path_parts in env_mapping.items():
@@ -228,7 +248,12 @@ def _apply_environment_overrides(payload: dict[str, Any]) -> dict[str, Any]:
         cursor: dict[str, Any] = merged
         for part in path_parts[:-1]:
             cursor = cursor.setdefault(part, {})
-        if path_parts[-1] in {"smtp_port", "immediate_alert_threshold", "port"}:
+        if path_parts[-1] in {
+            "smtp_port",
+            "immediate_alert_threshold",
+            "port",
+            "max_attachment_bytes",
+        }:
             cursor[path_parts[-1]] = int(value)
         elif path_parts[-1] in {
             "smtp_use_tls",
@@ -236,6 +261,9 @@ def _apply_environment_overrides(payload: dict[str, Any]) -> dict[str, Any]:
             "enabled",
             "send_empty_digest",
             "failure_alerts_enabled",
+            "notify_existing_on_first_run",
+            "ocr_enabled",
+            "attach_images",
         }:
             cursor[path_parts[-1]] = value.lower() in {"1", "true", "yes"}
         elif path_parts[-1] == "fallback_models":

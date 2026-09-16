@@ -54,6 +54,22 @@ def test_openai_can_be_explicitly_disabled_even_when_a_key_exists(monkeypatch):
     assert settings.llm.enabled is False
 
 
+def test_story_watcher_environment_overrides(monkeypatch, tmp_path):
+    monkeypatch.setenv("EMAIL_PROVIDER", "console")
+    monkeypatch.setenv("STORY_WATCH_ENABLED", "true")
+    monkeypatch.setenv("STORY_WATCH_USERNAME", "zero2sudo")
+    monkeypatch.setenv("STORY_WATCH_STATE_PATH", str(tmp_path / "stories.json"))
+    monkeypatch.setenv("STORY_WATCH_NOTIFY_EXISTING", "true")
+    monkeypatch.setenv("STORY_WATCH_MAX_ATTACHMENT_BYTES", "12345")
+
+    settings = load_settings("config/local_dev.toml")
+
+    assert settings.story_watcher.enabled is True
+    assert settings.story_watcher.username == "zero2sudo"
+    assert settings.story_watcher.notify_existing_on_first_run is True
+    assert settings.story_watcher.max_attachment_bytes == 12345
+
+
 def test_production_free_mode_stays_heuristic_even_when_a_key_exists(monkeypatch):
     monkeypatch.setenv("EMAIL_PROVIDER", "console")
     monkeypatch.setenv("OPENAI_API_KEY", "openai-test-key")

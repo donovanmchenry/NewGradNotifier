@@ -1,7 +1,13 @@
 from pathlib import Path
 
 from newgrad_notifier.config.settings import EmailSettings
-from newgrad_notifier.notifications.sender import FileEmailSender, ResendEmailSender, SMTPEmailSender, build_email_sender
+from newgrad_notifier.notifications.sender import (
+    EmailAttachment,
+    FileEmailSender,
+    ResendEmailSender,
+    SMTPEmailSender,
+    build_email_sender,
+)
 
 
 def test_build_email_sender_prefers_resend():
@@ -48,6 +54,8 @@ def test_file_email_sender_writes_html_variant(tmp_path):
 
 
 def test_resend_sender_returns_delivery_id(monkeypatch):
+    captured = {}
+
     class Response:
         def raise_for_status(self):
             return None
@@ -55,7 +63,11 @@ def test_resend_sender_returns_delivery_id(monkeypatch):
         def json(self):
             return {"id": "email_123"}
 
-    monkeypatch.setattr("newgrad_notifier.notifications.sender.requests.post", lambda *args, **kwargs: Response())
+    def fake_post(*args, **kwargs):
+        captured.update(kwargs)
+        return Response()
+
+    monkeypatch.setattr("newgrad_notifier.notifications.sender.requests.post", fake_post)
     sender = ResendEmailSender(
         EmailSettings(
             provider="resend",
@@ -65,4 +77,12 @@ def test_resend_sender_returns_delivery_id(monkeypatch):
         )
     )
 
-    assert sender.send("Subject", "Body", "dzmchenry@gmail.com") == "email_123"
+    assert sender.send(
+        "Subject",
+        "Body",
+        "dzmchenry@gmail.com",
+        attachments=[EmailAttachment(filename="story.jpg", content=b"image", content_type="image/jpeg")],
+        idempotency_key="story-watch-123",
+    ) == "email_123"
+    assert captured["headers"]["Idempotency-Key"] == "story-watch-123"
+    assert captured["json"]["attachments"] == [{"filename": "story.jpg", "content": "aW1hZ2U="}]
