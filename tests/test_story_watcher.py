@@ -72,6 +72,17 @@ def test_parse_story_items_accepts_valid_profile_with_no_active_stories():
     assert parse_story_items(html, username="zero2sudo") == []
 
 
+def test_parse_story_items_rejects_missing_metadata_when_counter_is_nonzero():
+    html = """
+    <html><head><title>zero2sudo - Anonymous profile view</title></head><body>
+      <div class="profile__stories-counter">47</div>
+    </body></html>
+    """
+
+    with pytest.raises(StoryViewerError, match="advertised 47 active Stories.*only 0"):
+        parse_story_items(html, username="zero2sudo")
+
+
 def test_parse_story_items_rejects_challenge_page():
     with pytest.raises(StoryViewerError, match="CAPTCHA"):
         parse_story_items("<html><title>Just a moment</title><div>captcha</div></html>", username="zero2sudo")

@@ -17,6 +17,8 @@ from typing import Callable
 
 import requests
 from bs4 import BeautifulSoup
+from playwright.sync_api import Error as PlaywrightError
+from playwright.sync_api import sync_playwright
 
 from newgrad_notifier.config.settings import AppSettings, StoryWatcherSettings
 from newgrad_notifier.notifications.sender import EmailAttachment, EmailSender, build_email_sender
@@ -122,26 +124,52 @@ def parse_story_items(html: str, *, username: str) -> list[StoryItem]:
                 slide=slide,
             )
         )
+
+    counter = soup.select_one(".profile__stories-counter")
+    counter_text = counter.get_text(" ", strip=True) if counter else ""
+    try:
+        advertised_count = int(counter_text)
+    except ValueError:
+        advertised_count = 0
+    if advertised_count > len(stories):
+        raise StoryViewerError(
+            f"The viewer advertised {advertised_count} active Stories but exposed metadata for "
+            f"only {len(stories)}."
+        )
     return stories
 
 
 def fetch_story_items(config: StoryWatcherSettings) -> list[StoryItem]:
-    """Fetch and parse the configured viewer profile without executing page ads."""
+    """Render and parse the viewer profile in a real Google Chrome session."""
 
-    response = requests.get(
-        config.source_url,
-        headers={
-            "User-Agent": (
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36"
-            ),
-            "Accept-Language": "en-US,en;q=0.9",
-            "Cache-Control": "no-cache",
-        },
-        timeout=30,
-    )
-    response.raise_for_status()
-    return parse_story_items(response.text, username=config.username)
+    try:
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(
+                channel="chrome",
+                headless=False,
+                args=["--disable-blink-features=AutomationControlled"],
+            )
+            context = browser.new_context(
+                viewport={"width": 1440, "height": 1200},
+                locale="en-US",
+                timezone_id="America/New_York",
+                color_scheme="light",
+            )
+            context.add_init_script(
+                "Object.defineProperty(navigator, 'webdriver', {get: () => undefined});"
+            )
+            page = context.new_page()
+            response = page.goto(config.source_url, wait_until="domcontentloaded", timeout=60_000)
+            if response is None:
+                raise StoryViewerError("The Story viewer navigation returned no response.")
+            if not response.ok:
+                raise StoryViewerError(f"The Story viewer returned HTTP {response.status}.")
+            page.wait_for_timeout(8_000)
+            html = page.content()
+            browser.close()
+    except PlaywrightError as exc:
+        raise StoryViewerError(f"Unable to render the Story viewer in Chrome: {exc}") from exc
+    return parse_story_items(html, username=config.username)
 
 
 def _read_state(path: Path, source_url: str) -> tuple[bool, dict[str, str]]:
