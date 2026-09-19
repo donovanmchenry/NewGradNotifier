@@ -1,12 +1,21 @@
 from __future__ import annotations
 
 import json
+import shutil
+import subprocess
 
 import pytest
 
+import newgrad_notifier.stories.watcher as watcher
 from newgrad_notifier.config.settings import load_settings
 from newgrad_notifier.notifications.sender import EmailAttachment, EmailSender
-from newgrad_notifier.stories.watcher import StoryItem, StoryViewerError, parse_story_items, watch_stories
+from newgrad_notifier.stories.watcher import (
+    StoryItem,
+    StoryMedia,
+    StoryViewerError,
+    parse_story_items,
+    watch_stories,
+)
 
 
 def _story(story_id: str, filename: str) -> StoryItem:
@@ -113,11 +122,111 @@ def test_story_watch_baselines_then_notifies_only_for_new_items(tmp_path, monkey
     assert changed.new_stories == 1
     assert changed.notification_sent is True
     assert len(sender.messages) == 1
-    assert "@zero2sudo posted 1 new Story" in sender.messages[0]["subject"]
+    assert sender.messages[0]["subject"].startswith("[zero2sudo ")
+    assert "New video Story" in sender.messages[0]["subject"]
     assert "https://cdn.example.com/viewer-2" in sender.messages[0]["body_text"]
     assert sender.messages[0]["idempotency_key"].startswith("story-watch-")
     state = json.loads((tmp_path / "story-state.json").read_text(encoding="utf-8"))
     assert set(state["seen"]) == {"key-story-1.mp4", "key-story-2.mp4"}
+
+
+def test_story_watch_suppresses_non_job_stories_but_marks_them_seen(tmp_path, monkeypatch):
+    monkeypatch.setenv("EMAIL_PROVIDER", "console")
+    settings = load_settings("config/local_dev.toml")
+    settings.story_watcher.enabled = True
+    settings.story_watcher.state_path = str(tmp_path / "story-state.json")
+    settings.story_watcher.notify_existing_on_first_run = True
+    sender = RecordingSender()
+    social_story = _story("viewer-social", "social.mp4")
+    monkeypatch.setattr(
+        watcher,
+        "_prepare_media",
+        lambda story, _config, _index: StoryMedia(
+            story=story,
+            extracted_text="Dinner was great",
+            headline="Dinner was great",
+            job_relevant=False,
+        ),
+    )
+
+    result = watch_stories(settings, sender=sender, story_fetcher=lambda _config: [social_story])
+
+    assert result.new_stories == 1
+    assert result.notified_stories == 0
+    assert result.notification_sent is False
+    assert sender.messages == []
+    state = json.loads((tmp_path / "story-state.json").read_text(encoding="utf-8"))
+    assert set(state["seen"]) == {"key-social.mp4"}
+
+
+def test_extract_urls_recognizes_bare_career_domains():
+    assert watcher._extract_urls("Apply now at careers.example.com/jobs/123") == (
+        "https://careers.example.com/jobs/123",
+    )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Software Engineer Intern applications are open",
+        "New grad SWE role",
+        "Apply at the company careers site",
+    ],
+)
+def test_job_relevance_keywords(text):
+    assert watcher._is_job_relevant(text, ()) is True
+
+
+@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg is not installed")
+def test_convert_image_and_video_to_jpeg_previews(tmp_path):
+    image_path = tmp_path / "source.png"
+    video_path = tmp_path / "source.mp4"
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-y",
+            "-f",
+            "lavfi",
+            "-i",
+            "color=c=blue:s=320x240",
+            "-frames:v",
+            "1",
+            str(image_path),
+        ],
+        check=True,
+    )
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-y",
+            "-f",
+            "lavfi",
+            "-i",
+            "color=c=blue:s=320x240:d=11",
+            "-pix_fmt",
+            "yuv420p",
+            str(video_path),
+        ],
+        check=True,
+    )
+
+    image_preview = watcher._convert_to_jpeg(
+        image_path.read_bytes(),
+        StoryItem("image", "image", "image", "https://example.com/image", "source.png"),
+    )
+    video_preview = watcher._convert_to_jpeg(
+        video_path.read_bytes(),
+        StoryItem("video", "video", "video", "https://example.com/video", "source.mp4"),
+    )
+
+    assert image_preview.startswith(b"\xff\xd8")
+    assert video_preview.startswith(b"\xff\xd8")
 
 
 def test_story_watch_does_not_mark_story_seen_when_delivery_fails(tmp_path, monkeypatch):

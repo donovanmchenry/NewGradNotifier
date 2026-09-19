@@ -60,8 +60,8 @@ Production-ready daily discovery, dedupe, ranking, and email notification pipeli
 - Tracks per-source health, including failed and repeatedly empty ATS boards
 - Includes an optional local tracking dashboard and feedback learner, disabled in the free production deployment
 - Suppresses empty digests and sends an independent failure alert when a run breaks
-- Checks zero2sudo's public Story viewer every ten minutes and emails newly observed Stories
-- Attaches new image Stories and extracts visible text and URLs with free local OCR
+- Checks zero2sudo's public Story viewer in Chrome and emails likely job-related Stories
+- Converts images and representative video frames to JPEG, then extracts visible text and URLs with free local OCR
 
 ## Local Setup
 
@@ -197,9 +197,11 @@ The app derives its cron expression from those values and APScheduler uses the c
 
 ## zero2sudo Story Alerts
 
-The separate [`.github/workflows/story-watch.yml`](.github/workflows/story-watch.yml) workflow checks the public `insta-stories-viewer.com` profile every ten minutes. It reads Story metadata directly from the page and does not click advertisements or require an Instagram login.
+The separate [`.github/workflows/story-watch.yml`](.github/workflows/story-watch.yml) workflow checks the public `insta-stories-viewer.com` profile in Google Chrome. It does not click advertisements or require an Instagram login. GitHub's native schedule is retained as a fallback, and the workflow also accepts a `zero2sudo-story-watch` `repository_dispatch` event from an external scheduler.
 
-The first successful run creates a silent baseline so the existing Story backlog does not generate a large email. Later runs send one email containing only newly observed Stories. Image Stories are attached when they are under the configured size limit, and Tesseract OCR extracts visible text and possible URLs. Video Stories are linked because attaching every video would make email delivery unreliable.
+The first successful run creates a silent baseline so the existing Story backlog does not generate a large email. Later runs download only newly observed media. FFmpeg converts images to JPEG and creates a three-frame JPEG contact sheet for videos. Tesseract extracts visible text, including bare careers domains. Stories without job-related text or links are marked seen without generating email.
+
+Each notification subject includes an Eastern Time timestamp so Gmail does not combine separate alerts with the same Story count. The email includes JPEG previews, OCR text, possible application links, and the original viewer media link.
 
 The workflow stores its deduplication state as a one-day GitHub Actions artifact. If that artifact expires after the workflow has been disabled, the next run safely creates a new silent baseline.
 
@@ -209,7 +211,7 @@ Run a local check with:
 newgrad-notifier --config config/production.toml watch-stories
 ```
 
-The anonymous viewer does not preserve Instagram link stickers. Notifications therefore include the Story media, OCR text, any visible URL, and a link back to the viewer page.
+The anonymous viewer does not preserve Instagram link stickers. OCR can recover visible URLs, but every opening should still be verified on the company's careers site.
 
 ## GitHub Actions Setup
 

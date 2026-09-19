@@ -60,7 +60,8 @@ def main() -> None:
         result = watch_stories(settings)
         print(
             f"Story watch complete: {result.total_stories} active, "
-            f"{result.new_stories} new, notification_sent={result.notification_sent}, "
+            f"{result.new_stories} new, {result.notified_stories} notified, "
+            f"notification_sent={result.notification_sent}, "
             f"baseline_created={result.baseline_created}"
         )
         return

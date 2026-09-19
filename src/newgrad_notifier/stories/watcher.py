@@ -14,6 +14,7 @@ from datetime import UTC, datetime
 from html import escape
 from pathlib import Path
 from typing import Callable
+from zoneinfo import ZoneInfo
 
 import requests
 from bs4 import BeautifulSoup
@@ -26,9 +27,28 @@ from newgrad_notifier.utils.hashing import sha256_text
 
 LOGGER = logging.getLogger(__name__)
 _STORY_SELECTOR = '[data-type="stories"][data-id][data-content]'
-_URL_PATTERN = re.compile(r"(?:https?://|www\.)[^\s<>()\[\]{}]+", re.IGNORECASE)
+_URL_PATTERN = re.compile(
+    r"(?:https?://|www\.)[^\s<>()\[\]{}]+"
+    r"|\b(?:[a-z0-9-]+\.)+(?:ai|app|careers|com|dev|io|jobs|net|org)(?:/[^\s<>()\[\]{}]*)?",
+    re.IGNORECASE,
+)
 _UNSAFE_FILENAME = re.compile(r"[^A-Za-z0-9._-]+")
 _MAX_RAW_ATTACHMENTS_BYTES = 24 * 1024 * 1024
+_JOB_TERMS = (
+    "apply",
+    "application",
+    "career",
+    "early career",
+    "engineer",
+    "hiring",
+    "intern",
+    "job",
+    "new grad",
+    "opening",
+    "recruit",
+    "software",
+    "swe",
+)
 
 
 class StoryViewerError(RuntimeError):
@@ -57,6 +77,8 @@ class StoryMedia:
     attachment_filename: str = ""
     extracted_text: str = ""
     extracted_urls: tuple[str, ...] = ()
+    headline: str = "New Story"
+    job_relevant: bool = True
     error: str = ""
 
 
@@ -68,6 +90,7 @@ class StoryWatchResult:
     new_stories: int
     notification_sent: bool
     baseline_created: bool = False
+    notified_stories: int = 0
 
 
 def _utc_timestamp() -> str:
@@ -235,6 +258,80 @@ def _attachment_filename(story: StoryItem, content_type: str, index: int) -> str
     return f"zero2sudo-{index:02d}-{stem}{suffix}"
 
 
+def _run_command(command: list[str], *, timeout: int = 45) -> None:
+    try:
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            check=False,
+            text=True,
+            timeout=timeout,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise StoryViewerError(f"media conversion failed: {exc}") from exc
+    if result.returncode != 0:
+        detail = result.stderr.strip().splitlines()[-1] if result.stderr.strip() else "unknown error"
+        raise StoryViewerError(f"media conversion failed: {detail}")
+
+
+def _convert_to_jpeg(content: bytes, story: StoryItem) -> bytes:
+    """Convert an image or representative video frames into a Gmail-previewable JPEG."""
+
+    if shutil.which("ffmpeg") is None:
+        raise StoryViewerError("ffmpeg is unavailable")
+    suffix = Path(story.filename).suffix or (".mp4" if story.media_type == "video" else ".img")
+    with tempfile.TemporaryDirectory() as directory:
+        source = Path(directory) / f"source{suffix}"
+        output = Path(directory) / "preview.jpg"
+        source.write_bytes(content)
+        if story.media_type == "video":
+            video_filter = (
+                "fps=1/5,scale=1080:-2:force_original_aspect_ratio=decrease,"
+                "pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black,tile=1x3"
+            )
+            _run_command(
+                [
+                    "ffmpeg",
+                    "-hide_banner",
+                    "-loglevel",
+                    "error",
+                    "-y",
+                    "-i",
+                    str(source),
+                    "-vf",
+                    video_filter,
+                    "-frames:v",
+                    "1",
+                    "-q:v",
+                    "3",
+                    str(output),
+                ],
+                timeout=60,
+            )
+        else:
+            _run_command(
+                [
+                    "ffmpeg",
+                    "-hide_banner",
+                    "-loglevel",
+                    "error",
+                    "-y",
+                    "-i",
+                    str(source),
+                    "-vf",
+                    "scale=1600:-2:force_original_aspect_ratio=decrease",
+                    "-frames:v",
+                    "1",
+                    "-q:v",
+                    "3",
+                    str(output),
+                ]
+            )
+        if not output.exists() or output.stat().st_size == 0:
+            raise StoryViewerError("media conversion produced no JPEG preview")
+        return output.read_bytes()
+
+
 def _run_ocr(content: bytes, content_type: str) -> str:
     if not content_type.startswith("image/") or shutil.which("tesseract") is None:
         return ""
@@ -264,42 +361,75 @@ def _normalize_extracted_url(value: str) -> str:
     return cleaned if cleaned.startswith(("http://", "https://")) else f"https://{cleaned}"
 
 
+def _extract_urls(text: str) -> tuple[str, ...]:
+    return tuple(dict.fromkeys(_normalize_extracted_url(match.group(0)) for match in _URL_PATTERN.finditer(text)))
+
+
+def _is_job_relevant(text: str, urls: tuple[str, ...]) -> bool:
+    lowered = text.lower()
+    return bool(urls) or any(term in lowered for term in _JOB_TERMS)
+
+
+def _story_headline(text: str) -> str:
+    lines = [re.sub(r"\s+", " ", line).strip(" .,:;|-") for line in text.splitlines()]
+    candidates = [line for line in lines if 8 <= len(line) <= 110 and re.search(r"[A-Za-z]{3}", line)]
+    for line in candidates:
+        if any(term in line.lower() for term in _JOB_TERMS):
+            return line
+    return candidates[0] if candidates else "New Story"
+
+
 def _prepare_media(story: StoryItem, config: StoryWatcherSettings, index: int) -> StoryMedia:
-    if story.media_type != "image" or not (config.attach_images or config.ocr_enabled):
-        return StoryMedia(story=story)
+    if not (config.attach_images or config.ocr_enabled):
+        return StoryMedia(story=story, headline=f"New {story.media_type} Story", job_relevant=True)
     try:
-        content, content_type = _download_media(story, config.max_attachment_bytes)
-        if not content_type.startswith("image/"):
-            raise StoryViewerError(f"expected image media but received {content_type}")
-        extracted_text = _run_ocr(content, content_type) if config.ocr_enabled else ""
-        urls = tuple(dict.fromkeys(_normalize_extracted_url(item) for item in _URL_PATTERN.findall(extracted_text)))
-        filename = _attachment_filename(story, content_type, index)
+        content, _ = _download_media(story, config.max_attachment_bytes)
+        preview = _convert_to_jpeg(content, story)
+        extracted_text = _run_ocr(preview, "image/jpeg") if config.ocr_enabled else ""
+        urls = _extract_urls(extracted_text)
         return StoryMedia(
             story=story,
-            content=content if config.attach_images else None,
-            content_type=content_type,
-            attachment_filename=filename,
+            content=preview if config.attach_images else None,
+            content_type="image/jpeg",
+            attachment_filename=_attachment_filename(story, "image/jpeg", index),
             extracted_text=extracted_text,
             extracted_urls=urls,
+            headline=_story_headline(extracted_text),
+            job_relevant=_is_job_relevant(extracted_text, urls),
         )
     except (requests.RequestException, StoryViewerError, ValueError) as exc:
         LOGGER.warning("Unable to download Story %s: %s", story.viewer_id, exc)
-        return StoryMedia(story=story, error=str(exc))
+        return StoryMedia(
+            story=story,
+            headline=f"Unprocessed {story.media_type} Story",
+            job_relevant=True,
+            error=str(exc),
+        )
 
 
-def _render_story_email(username: str, source_url: str, media: list[StoryMedia]) -> tuple[str, str, str]:
+def _render_story_email(
+    username: str,
+    source_url: str,
+    media: list[StoryMedia],
+    *,
+    observed_count: int,
+) -> tuple[str, str, str]:
     count = len(media)
-    subject = f"[NewGradNotifier] @{username} posted {count} new Stor{'y' if count == 1 else 'ies'}"
+    now = datetime.now(ZoneInfo("America/New_York"))
+    minute_stamp = now.strftime("%Y-%m-%d %I:%M %p ET")
+    subject_detail = media[0].headline if count == 1 else f"{count} likely job Stories"
+    subject = f"[zero2sudo {minute_stamp}] {subject_detail}"[:180]
     text_lines = [
-        f"@{username} posted {count} new Instagram Stor{'y' if count == 1 else 'ies'}.",
+        f"Found {count} likely job-related Stor{'y' if count == 1 else 'ies'} from @{username}.",
+        f"Checked {observed_count} newly posted Stor{'y' if observed_count == 1 else 'ies'}.",
         "",
-        "The anonymous viewer does not preserve Instagram link stickers. Use the attached image or media link to identify the role, then open the company's application page.",
+        "JPEG previews and OCR text are included below. Verify each role on the company's careers site before applying.",
         "",
     ]
     cards: list[str] = []
     for index, item in enumerate(media, start=1):
         story = item.story
-        text_lines.extend([f"Story {index} ({story.media_type})", story.media_url])
+        text_lines.extend([f"{index}. {item.headline} ({story.media_type})", story.media_url])
         if item.attachment_filename:
             text_lines.append(f"Attached: {item.attachment_filename}")
         if item.extracted_text:
@@ -329,7 +459,8 @@ def _render_story_email(username: str, source_url: str, media: list[StoryMedia])
         )
         cards.append(
             '<div style="margin:0 0 16px; padding:18px; background:#18181b; border:1px solid #27272a; border-radius:8px;">'
-            f'<p style="margin:0 0 12px; color:#fafafa;"><strong>Story {index}</strong> &middot; {escape(story.media_type)}</p>'
+            f'<p style="margin:0 0 4px; color:#fafafa;"><strong>{index}. {escape(item.headline)}</strong></p>'
+            f'<p style="margin:0 0 12px; color:#a1a1aa; font-size:12px;">{escape(story.media_type)} Story</p>'
             f'<a href="{escape(story.media_url)}" style="display:inline-block; padding:9px 14px; background:#fafafa; color:#18181b; text-decoration:none; border-radius:6px; font-weight:bold;">View or download Story</a>'
             f'{links_html}{extracted_html}{note_html}</div>'
         )
@@ -341,8 +472,8 @@ def _render_story_email(username: str, source_url: str, media: list[StoryMedia])
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#09090b">
     <tr><td align="center"><table role="presentation" width="640" cellpadding="0" cellspacing="0" style="max-width:640px; width:100%;">
       <tr><td style="padding:32px 20px 40px;">
-        <h1 style="margin:0 0 8px; font-size:24px; color:#fafafa;">New Stories from @{escape(username)}</h1>
-        <p style="margin:0 0 22px; color:#a1a1aa; line-height:1.5;">The viewer strips Instagram link stickers. Check the attached screenshots and any OCR links below, then apply directly on the company site.</p>
+        <h1 style="margin:0 0 8px; font-size:24px; color:#fafafa;">Likely job Stories from @{escape(username)}</h1>
+        <p style="margin:0 0 22px; color:#a1a1aa; line-height:1.5;">Found {count} likely job-related Stories among {observed_count} new Stories. JPEG previews and OCR text are included. Verify each role on the company's careers site before applying.</p>
         {''.join(cards)}
         <p style="margin:24px 0 0;"><a href="{escape(source_url)}" style="color:#93c5fd;">Open the anonymous viewer profile</a></p>
       </td></tr>
@@ -388,7 +519,22 @@ def watch_stories(
         LOGGER.info("No new Stories found among %s active Stories.", len(stories))
         return StoryWatchResult(total_stories=len(stories), new_stories=0, notification_sent=False)
 
-    prepared = [_prepare_media(story, config, index) for index, story in enumerate(new_stories, start=1)]
+    prepared_all = [_prepare_media(story, config, index) for index, story in enumerate(new_stories, start=1)]
+    prepared = [item for item in prepared_all if item.job_relevant]
+    if not prepared:
+        for story in new_stories:
+            seen[story.dedupe_key] = observed_at
+        _write_state(state_path, config.source_url, seen)
+        LOGGER.info(
+            "Suppressed %s new Stories because OCR found no job-related content.",
+            len(new_stories),
+        )
+        return StoryWatchResult(
+            total_stories=len(stories),
+            new_stories=len(new_stories),
+            notification_sent=False,
+            notified_stories=0,
+        )
     attachment_bytes = 0
     for index, item in enumerate(prepared):
         if item.content is None:
@@ -416,6 +562,7 @@ def watch_stories(
         config.username,
         config.source_url,
         prepared,
+        observed_count=len(new_stories),
     )
     delivery = sender or build_email_sender(settings.email)
     idempotency_key = f"story-watch-{sha256_text('|'.join(sorted(item.dedupe_key for item in new_stories)))[:32]}"
@@ -431,9 +578,14 @@ def watch_stories(
     for story in new_stories:
         seen[story.dedupe_key] = observed_at
     _write_state(state_path, config.source_url, seen)
-    LOGGER.info("Sent one Story notification for %s new Stories.", len(new_stories))
+    LOGGER.info(
+        "Sent one Story notification for %s likely job Stories among %s new Stories.",
+        len(prepared),
+        len(new_stories),
+    )
     return StoryWatchResult(
         total_stories=len(stories),
         new_stories=len(new_stories),
         notification_sent=True,
+        notified_stories=len(prepared),
     )
