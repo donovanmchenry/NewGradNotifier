@@ -3,11 +3,7 @@ name: Daily Job Discovery
 on:
   workflow_dispatch:
   schedule:
-    # Run hourly after the earliest 08:00 Eastern boundary. The database-backed
-    # gate below still permits only one completed run per local day. Off-hour
-    # scheduling avoids GitHub's busiest cron window and gives delayed or
-    # dropped triggers several chances to recover the same morning.
-    - cron: "17 12-18 * * *"
+    - cron: "0 12,13 * * *"
 
 permissions:
   contents: read

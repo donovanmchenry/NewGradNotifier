@@ -155,7 +155,6 @@ def run_pipeline_once(config_path: str | None = None) -> None:
                     max_fetches=settings.collection.max_description_fetches_per_run,
                     min_characters=settings.collection.min_description_characters,
                     logger=logger,
-                    errors=errors,
                 )
             }
             unique_jobs = [enriched_by_key.get(job.canonical_key, job) for job in unique_jobs]
