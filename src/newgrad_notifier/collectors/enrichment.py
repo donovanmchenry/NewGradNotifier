@@ -9,7 +9,7 @@ from typing import Any
 
 from bs4 import BeautifulSoup
 
-from newgrad_notifier.contracts import NormalizedJob
+from newgrad_notifier.contracts import NormalizedJob, PipelineError
 from newgrad_notifier.normalization.job_details import extract_job_details
 from newgrad_notifier.utils.hashing import sha256_text
 from newgrad_notifier.utils.http import CachedHttpClient
@@ -73,6 +73,7 @@ def enrich_sparse_jobs(
     max_fetches: int,
     min_characters: int,
     logger: logging.Logger,
+    errors: list[PipelineError] | None = None,
 ) -> list[NormalizedJob]:
     """Fetch descriptions for the strongest sparse listings, bounded for predictable runtime."""
 
@@ -96,6 +97,15 @@ def enrich_sparse_jobs(
         try:
             description = extract_description_from_html(http_client.get_text(job.apply_url))
         except Exception as exc:  # best-effort enrichment must not break discovery
+            if errors is not None:
+                errors.append(
+                    PipelineError(
+                        source_name=job.source_name,
+                        stage="enrich",
+                        message="Description enrichment skipped",
+                        detail=f"{job.company_name}: {exc}",
+                    )
+                )
             logger.info(
                 "Description enrichment skipped",
                 extra={"context": {"company": job.company_name, "url": job.apply_url, "error": str(exc)}},

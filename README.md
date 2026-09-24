@@ -220,7 +220,8 @@ The workflow is in [`.github/workflows/daily-run.yml`](.github/workflows/daily-r
 What it does:
 
 - runs on `workflow_dispatch`
-- runs on a UTC schedule twice per day (`12:00` and `13:00` UTC)
+- runs hourly at `:17` from `12:17` through `18:17` UTC, giving GitHub several
+  chances to deliver the daily trigger after 08:00 Eastern
 - restores persisted state before deciding whether the local day already ran
 - tolerates delayed cron delivery and runs only once after `08:00` in `America/New_York`
 - skips scheduled runs entirely until `2026-07-01`
