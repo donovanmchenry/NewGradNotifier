@@ -75,6 +75,7 @@ excluded_job_families = [
   "Hardware",
 ]
 priority_companies = [
+  "Delinea",
   "Google",
   "Meta",
   "Microsoft",

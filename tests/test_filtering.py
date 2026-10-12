@@ -39,3 +39,11 @@ def test_structured_new_grad_source_context_allows_generic_swe_titles():
         )
         is True
     )
+
+
+def test_support_engineering_titles_do_not_count_as_entry_level_swe():
+    settings = load_settings("config/local_dev.toml")
+
+    assert is_relevant_role("Advanced Support Engineer I", "Entry-level role", settings) is False
+    assert is_relevant_role("Technical Support Engineer", "New graduate role", settings) is False
+    assert is_relevant_role("Software Engineer I", "Build tools for technical support teams", settings) is True

@@ -43,7 +43,7 @@ Production-ready daily discovery, dedupe, ranking, and email notification pipeli
 - Collects jobs from:
   - the ApplyGuy 2027 and Simplify machine-readable feeds
   - the SpeedyApply 2027 U.S. new-grad list
-  - 46 curated Greenhouse, Lever, and Ashby boards
+  - 46 enabled Greenhouse, Lever, and Ashby boards, including Delinea
   - tracked company careers pages
   - optional general web search
 - Filters toward US and remote early-career SWE roles
@@ -194,6 +194,10 @@ The runtime target is:
 - scheduled GitHub Actions automation begins on `2026-07-01`
 
 The app derives its cron expression from those values and APScheduler uses the configured timezone directly.
+
+## Delinea Job Monitoring
+
+The daily production run checks `https://jobs.ashbyhq.com/delinea` through Ashby's public job-board API. Delinea is a priority company for ranking. New or reopened US/remote early-career SWE roles go through the existing graduation-cohort, relevance, freshness, and fit filters before inclusion in the daily digest. Senior roles and internships remain excluded, and persisted state prevents repeated notifications. The existing digest is capped to eight matches across all companies; very high-fit matches also use the existing immediate-alert path during the daily run.
 
 ## zero2sudo Story Alerts
 

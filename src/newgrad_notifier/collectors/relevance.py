@@ -241,6 +241,8 @@ def is_relevant_role(title: str, description: str, settings: AppSettings, source
     """Return True when the role resembles an entry-level SWE role."""
 
     title_lower = title.lower()
+    if "support engineer" in title_lower or "technical support" in title_lower:
+        return False
     if not cohort_allowed(title, settings):
         return False
     haystack = f"{title} {description}".lower()

@@ -1,3 +1,5 @@
+import json
+
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -9,6 +11,14 @@ from newgrad_notifier.utils.http import CachedHttpClient
 
 def test_simplify_collector_filters_relevant_jobs(tmp_path):
     settings = load_settings("config/local_dev.toml")
+    # Keep the role-filtering fixture fresh; age behavior is tested separately.
+    feed = settings.structured_feeds[0]
+    payload = json.loads(Path(feed.url).read_text())
+    for job in payload["jobs"]:
+        job["posted_at"] = datetime.now(UTC).isoformat()
+    fixture_path = tmp_path / "jobs.json"
+    fixture_path.write_text(json.dumps(payload))
+    feed.url = str(fixture_path)
     collector = SimplifyCollector(settings.structured_feeds)
     http_client = CachedHttpClient(cache_dir=tmp_path / "cache")
     context = CollectorContext(settings=settings, http_client=http_client, logger=__import__("logging").getLogger(__name__))

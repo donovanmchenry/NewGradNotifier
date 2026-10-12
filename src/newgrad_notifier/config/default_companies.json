@@ -1,5 +1,12 @@
 [
   {
+    "slug": "delinea",
+    "name": "Delinea",
+    "homepage": "https://delinea.com",
+    "careers_url": "https://jobs.ashbyhq.com/delinea",
+    "priority_tier": 1
+  },
+  {
     "slug": "apple",
     "name": "Apple",
     "homepage": "https://www.apple.com",

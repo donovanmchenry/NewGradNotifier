@@ -28,6 +28,7 @@
   {"company_name":"Anthropic","platform":"greenhouse","identifier":"anthropic","priority_tier":1,"enabled":true},
   {"company_name":"Cohere","platform":"ashby","identifier":"cohere","priority_tier":2,"enabled":true},
   {"company_name":"Cursor","platform":"ashby","identifier":"cursor","priority_tier":2,"enabled":true},
+  {"company_name":"Delinea","platform":"ashby","identifier":"delinea","careers_url":"https://jobs.ashbyhq.com/delinea","priority_tier":1,"enabled":true},
   {"company_name":"Docker","platform":"ashby","identifier":"docker","priority_tier":2,"enabled":true},
   {"company_name":"ElevenLabs","platform":"ashby","identifier":"elevenlabs","priority_tier":2,"enabled":true},
   {"company_name":"Groq","platform":"gem","identifier":"groq","priority_tier":2,"enabled":false},
