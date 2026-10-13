@@ -197,7 +197,33 @@ The app derives its cron expression from those values and APScheduler uses the c
 
 ## Delinea Job Monitoring
 
-The daily production run checks `https://jobs.ashbyhq.com/delinea` through Ashby's public job-board API. Delinea is a priority company for ranking. New or reopened US/remote early-career SWE roles go through the existing graduation-cohort, relevance, freshness, and fit filters before inclusion in the daily digest. Senior roles and internships remain excluded, and persisted state prevents repeated notifications. The existing digest is capped to eight matches across all companies; very high-fit matches also use the existing immediate-alert path during the daily run.
+Delinea remains a priority board in the daily digest. A separate
+[`.github/workflows/delinea-watch.yml`](.github/workflows/delinea-watch.yml) also
+checks its public Ashby API every three hours, at 17 minutes past the hour in UTC.
+GitHub scheduling can be delayed. It runs independently of the daily SQLite state.
+
+The dedicated watch emails each newly observed qualifying US/remote SWE opening
+without fit scoring, freshness limits, or a digest cap. Explicit early-career roles
+are labeled as matches; generic SWE titles without clear senior requirements are
+labeled for eligibility review. Clearly senior, support, internship, non-US, and
+explicitly incompatible graduation-cohort roles are excluded. Unknown locations
+are included for review. It uses descriptions, so stated requirements may exclude
+an opening even if its title is generic.
+
+The first run alerts on any current eligible roles. Successful notifications are
+saved after each email; failed emails retry on the next run. Resend receives a
+stable idempotency key per posting. The watch retains its own state artifact for
+90 days and refuses to scan on restoration errors. If all state artifacts expire,
+current eligible listings can be alerted again. An already alerted posting ID is
+not alerted again for edits or reopening. A role can also appear in the regular
+daily digest, whose notification history is separate.
+
+Set repository variable `COMPANY_WATCH_ENABLED=false` to pause scheduled checks.
+Run a manual check with:
+
+```bash
+newgrad-notifier --config config/production.toml watch-company
+```
 
 ## zero2sudo Story Alerts
 

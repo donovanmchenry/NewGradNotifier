@@ -21,6 +21,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("run-once", help="Run discovery, ranking, and digest generation once.")
     subparsers.add_parser("schedule", help="Run the APScheduler service.")
     subparsers.add_parser("serve-tracker", help="Run the application tracking dashboard.")
+    subparsers.add_parser("watch-company", help="Send uncapped alerts for the configured company board.")
     subparsers.add_parser("watch-stories", help="Check the configured Instagram Story viewer for new posts.")
     return parser
 
@@ -52,6 +53,13 @@ def main() -> None:
         from newgrad_notifier.tracking.app import run_tracking_server
 
         run_tracking_server(args.config_path)
+        return
+    if args.command == "watch-company":
+        from newgrad_notifier.company_watch import watch_company
+
+        result = watch_company(load_settings(args.config_path))
+        print(f"Company watch complete: {result.total_jobs} listings, "
+              f"{result.matching_jobs} matches, {result.notified_jobs} notified")
         return
     if args.command == "watch-stories":
         from newgrad_notifier.stories.watcher import watch_stories

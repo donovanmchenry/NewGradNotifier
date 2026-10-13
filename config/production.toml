@@ -148,3 +148,15 @@ simplify_enabled = true
 ats_enabled = true
 company_pages_enabled = false
 web_search_enabled = false
+
+[company_watch]
+enabled = true
+state_path = "./data/delinea-watch-state.json"
+
+[company_watch.board]
+company_name = "Delinea"
+platform = "ashby"
+identifier = "delinea"
+careers_url = "https://jobs.ashbyhq.com/delinea"
+priority_tier = 1
+enabled = true

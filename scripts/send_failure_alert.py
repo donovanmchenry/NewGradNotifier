@@ -26,8 +26,8 @@ def main() -> int:
         {
             "from": sender,
             "to": [recipient],
-            "subject": "[NewGradNotifier] Daily workflow failed",
-            "text": f"The daily job workflow failed. Review the run here:\n{run_url}",
+            "subject": f"[NewGradNotifier] {os.getenv('GITHUB_WORKFLOW', 'Daily workflow')} failed",
+            "text": f"The {os.getenv('GITHUB_WORKFLOW', 'daily job workflow')} failed. Review the run here:\n{run_url}",
         }
     ).encode("utf-8")
     request = Request(

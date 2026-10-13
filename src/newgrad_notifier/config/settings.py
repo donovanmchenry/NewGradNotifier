@@ -156,6 +156,15 @@ class ATSBoardConfig(BaseModel):
     enabled: bool = True
 
 
+class CompanyWatchSettings(BaseModel):
+    enabled: bool = False
+    board: ATSBoardConfig = Field(default_factory=lambda: ATSBoardConfig(
+        company_name="Delinea", platform="ashby", identifier="delinea",
+        careers_url="https://jobs.ashbyhq.com/delinea", priority_tier=1,
+    ))
+    state_path: str = "./data/delinea-watch-state.json"
+
+
 class CompanyCoverageSettings(BaseModel):
     list_path: str = ""
 
@@ -178,6 +187,7 @@ class AppSettings(BaseModel):
     llm: LLMSettings
     schedule: ScheduleSettings
     story_watcher: StoryWatcherSettings = Field(default_factory=StoryWatcherSettings)
+    company_watch: CompanyWatchSettings = Field(default_factory=CompanyWatchSettings)
     thresholds: ThresholdSettings
     collection: CollectionSettings
     filters: FilterSettings
@@ -231,6 +241,8 @@ def _apply_environment_overrides(payload: dict[str, Any]) -> dict[str, Any]:
         "IMMEDIATE_ALERT_THRESHOLD": ("schedule", "immediate_alert_threshold"),
         "RUN_TIME_LOCAL": ("schedule", "run_time_local"),
         "TIME_ZONE": ("schedule", "timezone"),
+        "COMPANY_WATCH_ENABLED": ("company_watch", "enabled"),
+        "COMPANY_WATCH_STATE_PATH": ("company_watch", "state_path"),
         "STORY_WATCH_ENABLED": ("story_watcher", "enabled"),
         "STORY_WATCH_USERNAME": ("story_watcher", "username"),
         "STORY_WATCH_URL": ("story_watcher", "source_url"),
